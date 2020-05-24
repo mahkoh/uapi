@@ -1,0 +1,6 @@
+#!/bin/bash
+
+./for_coverage sudo -E cargo +nightly test
+sudo grcov ../target/debug/ -s . -t lcov --llvm --branch --ignore-not-existing -o ../target/debug/lcov.info
+sudo genhtml -o ../coverage/ --show-details --highlight --ignore-errors source --legend ../target/debug/lcov.info
+sudo -E cargo clean

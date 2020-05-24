@@ -1,0 +1,13 @@
+image: freebsd/12.x
+sources:
+  - https://github.com/mahkoh/uapi
+tasks:
+  - install: |
+      curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain stable
+  - build: |
+      cd uapi
+      sudo -E $HOME/.cargo/bin/cargo build --verbose
+  - test: |
+      cd uapi
+      export RUST_BACKTRACE=1
+      sudo -E $HOME/.cargo/bin/cargo test --verbose
