@@ -1,0 +1,22 @@
+[package]
+name = "uapi"
+version = "0.1.0"
+authors = ["Julian Orth <ju.orth@gmail.com>"]
+edition = "2018"
+description = "Wrappers for OS APIs on UNIX-like platform"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/mahkoh/uapi"
+keywords = ["unix", "linux", "macos", "osx", "android", "bsd", "freebsd"]
+categories = ["os::unix-apis"]
+
+[dependencies]
+libc = "0.2"
+cfg-if = "0.1"
+proc = { path = "../uapi-proc" }
+
+[dev-dependencies]
+tempfile = "3.0.5"
+testutils = { path = "../uapi-testutils" }
+
+[build-dependencies]
+cc = "1"

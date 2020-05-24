@@ -1,0 +1,10 @@
+[package]
+name = "testutils"
+version = "0.1.0"
+authors = ["Julian Orth <ju.orth@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+uapi = { path = "../uapi" }
+tempfile = "3.0.5"
+proc = { path = "../uapi-proc"}
