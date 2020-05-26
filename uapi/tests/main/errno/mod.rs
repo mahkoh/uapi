@@ -1,5 +1,5 @@
 use std::io::Error;
-use uapi::{get_errno, set_errno};
+use uapi::*;
 
 #[test]
 fn set_errno1() {

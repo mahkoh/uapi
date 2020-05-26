@@ -5,7 +5,7 @@ use uapi::*;
 fn process2() {
     match unsafe { fork().unwrap() } {
         0 => exit(0),
-        n => {
+        _ => {
             let (_, status) = wait().unwrap();
             assert_eq!(WIFEXITED(status), true);
             assert_eq!(WIFSIGNALED(status), false);

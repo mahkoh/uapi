@@ -1,5 +1,4 @@
 use std::process::exit;
-use testutils::strace;
 use uapi::*;
 
 #[test]

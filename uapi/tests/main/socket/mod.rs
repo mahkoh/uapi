@@ -1,12 +1,20 @@
 use std::{
     collections::HashSet,
-    io::{IoSlice, IoSliceMut, Read, Write},
+    io::{IoSlice, IoSliceMut, Write},
     mem, thread,
 };
-use testutils::{strace, Tempdir};
+use testutils::*;
 use uapi::*;
 
+cfg_if::cfg_if! {
+    if #[cfg(target_os = "linux")] {
+        mod linux;
+        pub use linux::*;
+    }
+}
+
 mod cmsg;
+mod sockopt;
 
 fn addr(s: &str) -> c::sockaddr_un {
     let mut addr: c::sockaddr_un = pod_zeroed();
@@ -24,7 +32,7 @@ fn socket1() {
     let server_addr = addr(server_path);
     let client_addr = addr(client_path);
 
-    let mut server = {
+    let server = {
         let fd = socket(c::AF_UNIX, c::SOCK_STREAM, 0).unwrap();
         bind(*fd, &server_addr).unwrap();
         listen(*fd, 128).unwrap();
@@ -37,35 +45,39 @@ fn socket1() {
         connect(*client, &server_addr).unwrap();
 
         send(*client, b"hello world", 0).unwrap();
-        shutdown(*client, c::SHUT_WR);
+        shutdown(*client, c::SHUT_WR).unwrap();
 
         assert_eq!(&client.read_to_new_ustring().unwrap(), "hol up");
 
         let mut pa: c::sockaddr_un = pod_zeroed();
         getpeername(*client, &mut pa).unwrap();
-        assert_eq!(as_bytes(&pa), as_bytes(&server_addr));
+        cmp_addr_un(&pa, &server_addr);
 
         let mut sa: c::sockaddr_un = pod_zeroed();
         getsockname(*client, &mut sa).unwrap();
-        assert_eq!(as_bytes(&sa), as_bytes(&client_addr));
+        cmp_addr_un(&sa, &client_addr);
     });
 
     let mut accepted_client_addr: c::sockaddr_un = pod_zeroed();
-    let (mut client, addr_size) = strace(true, || {
-        accept(*server, Some(&mut accepted_client_addr)).unwrap()
-    });
+    let (mut client, addr_size) =
+        accept(*server, Some(&mut accepted_client_addr)).unwrap();
 
     assert!(addr_size <= mem::size_of::<c::sockaddr_un>());
-    assert_eq!(as_bytes(&accepted_client_addr), as_bytes(&client_addr));
+    cmp_addr_un(&accepted_client_addr, &client_addr);
 
     let mut buf = [0; 128];
     let len = recv(*client, &mut buf, 0).unwrap();
     assert_eq!(len, 11);
     assert_eq!(&buf[..11], b"hello world");
     client.write_all(b"hol up").unwrap();
-    close(client);
+    close(client).unwrap();
 
     thread.join().unwrap();
+}
+
+fn cmp_addr_un(a: &c::sockaddr_un, b: &c::sockaddr_un) {
+    assert_eq!(a.sun_family, b.sun_family);
+    assert_eq!(&a.sun_path[..], &b.sun_path[..]);
 }
 
 #[test]
@@ -77,14 +89,14 @@ fn socket2() {
     let server_addr = addr(server_path);
     let client_addr = addr(client_path);
 
-    let mut server = {
+    let server = {
         let fd = socket(c::AF_UNIX, c::SOCK_DGRAM, 0).unwrap();
         bind(*fd, &server_addr).unwrap();
         fd
     };
 
     {
-        let mut client = socket(c::AF_UNIX, c::SOCK_DGRAM, 0).unwrap();
+        let client = socket(c::AF_UNIX, c::SOCK_DGRAM, 0).unwrap();
         bind(*client, &client_addr).unwrap();
         let msghdr = Msghdr {
             iov: &[IoSlice::new(b"hello world")],
@@ -107,13 +119,13 @@ fn socket2() {
         assert_eq!(buflen, 11);
         assert_eq!(&buf[..11], b"hello world");
         assert!(addr_size <= mem::size_of::<c::sockaddr_un>());
-        assert_eq!(as_bytes(&accepted_client_addr), as_bytes(&client_addr));
+        cmp_addr_un(&accepted_client_addr, &client_addr);
     }
 
     unlink(client_path).unwrap();
 
     {
-        let mut client = socket(c::AF_UNIX, c::SOCK_DGRAM, 0).unwrap();
+        let client = socket(c::AF_UNIX, c::SOCK_DGRAM, 0).unwrap();
         bind(*client, &client_addr).unwrap();
         sendto(*client, b"ayo", 0, &server_addr).unwrap();
     }
@@ -126,7 +138,7 @@ fn socket2() {
         assert_eq!(buflen, 3);
         assert_eq!(&buf[..3], b"ayo");
         assert!(addr_size <= mem::size_of::<c::sockaddr_un>());
-        assert_eq!(as_bytes(&accepted_client_addr), as_bytes(&client_addr));
+        cmp_addr_un(&accepted_client_addr, &client_addr);
     }
 }
 

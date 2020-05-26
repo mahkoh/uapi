@@ -1,7 +1,6 @@
 use crate::*;
 
 #[man(accept4(2))]
-#[notest]
 pub fn accept4<T: Pod + ?Sized>(
     sockfd: c::c_int,
     mut addr: Option<&mut T>,

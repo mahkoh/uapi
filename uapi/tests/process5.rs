@@ -1,5 +1,4 @@
 use std::process::exit;
-use testutils::strace;
 use uapi::*;
 
 #[test]
@@ -18,7 +17,7 @@ fn process5() {
             assert_eq!(WIFCONTINUED(status), false);
             assert_eq!(WSTOPSIG(status), c::SIGSTOP);
 
-            kill(n, c::SIGCONT);
+            kill(n, c::SIGCONT).unwrap();
 
             let (pid, status) = waitpid(n, c::WCONTINUED).unwrap();
             assert_eq!(pid, n);

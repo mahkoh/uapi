@@ -1,5 +1,5 @@
 use std::collections::HashSet;
-use testutils::{create_file, Tempdir};
+use testutils::*;
 use uapi::*;
 
 fn readdir_x<F: Fn(&Tempdir) -> Result<Dir>>(f: F) {

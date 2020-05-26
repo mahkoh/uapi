@@ -25,8 +25,7 @@ pub fn pod_zeroed<T: Pod>() -> T {
 /// Converts `u` to `T`
 ///
 /// `u` and `T` must have the same size.
-#[notest]
-pub fn pod_read<T: Pod, U: ?Sized>(u: &U) -> Result<T> {
+pub fn pod_read<T: Pod, U: Packed + ?Sized>(u: &U) -> Result<T> {
     let mut t = pod_zeroed();
     pod_write(u, &mut t)?;
     Ok(t)
@@ -35,8 +34,7 @@ pub fn pod_read<T: Pod, U: ?Sized>(u: &U) -> Result<T> {
 /// Converts `u` into an iterator of `T`
 ///
 /// The size of `u` must be a multiple of the size of `T`
-#[notest]
-pub fn pod_iter<'a, T: Pod + 'a, U: ?Sized>(
+pub fn pod_iter<'a, T: Pod + 'a, U: Packed + ?Sized>(
     u: &'a U,
 ) -> Result<impl Iterator<Item = T> + 'a> {
     if mem::size_of::<T>() != 0 && mem::size_of_val(u) % mem::size_of::<T>() != 0 {
@@ -71,8 +69,7 @@ impl<'a, T: Pod> Iterator for Iter<'a, T> {
 /// Converts an initial port of `u` to `T`
 ///
 /// The size of `u` must be equal to or larger than the size of `T`.
-#[notest]
-pub fn pod_read_init<T: Pod, U: ?Sized>(u: &U) -> Result<T> {
+pub fn pod_read_init<T: Pod, U: Packed + ?Sized>(u: &U) -> Result<T> {
     let mut t = pod_zeroed();
     pod_write_common_prefix(u, &mut t)?;
     Ok(t)
@@ -81,7 +78,7 @@ pub fn pod_read_init<T: Pod, U: ?Sized>(u: &U) -> Result<T> {
 /// Writes `u` to `t`
 ///
 /// `u` and `t` must have the same size.
-pub fn pod_write<T: Pod + ?Sized, U: ?Sized>(u: &U, t: &mut T) -> Result<()> {
+pub fn pod_write<T: Pod + ?Sized, U: Packed + ?Sized>(u: &U, t: &mut T) -> Result<()> {
     if mem::size_of_val(t) != mem::size_of_val(u) {
         einval()
     } else {
@@ -92,38 +89,32 @@ pub fn pod_write<T: Pod + ?Sized, U: ?Sized>(u: &U, t: &mut T) -> Result<()> {
 /// Writes an initial portion of `u` to `t`
 ///
 /// The size of `u` must be equal to or larger than the size of `t`.
-fn pod_write_common_prefix<T: Pod + ?Sized, U: ?Sized>(u: &U, t: &mut T) -> Result<()> {
+fn pod_write_common_prefix<T: Pod + ?Sized, U: Packed + ?Sized>(
+    u: &U,
+    t: &mut T,
+) -> Result<()> {
     if mem::size_of_val(t) > mem::size_of_val(u) {
         einval()
     } else {
         unsafe {
             let dst = t as *mut _ as *mut u8;
             let src = u as *const _ as *const u8;
-            std::ptr::copy_nonoverlapping(black_box_id(src), dst, mem::size_of_val(t));
+            std::ptr::copy_nonoverlapping(src, dst, mem::size_of_val(t));
         }
         Ok(())
-    }
-}
-
-/// Returns the object representation of `t`
-#[notest]
-pub fn as_bytes<T: ?Sized>(t: &T) -> &[u8] {
-    unsafe {
-        let ptr = t as *const _ as *const u8;
-        std::slice::from_raw_parts(black_box_id(ptr), mem::size_of_val(t))
     }
 }
 
 unsafe impl<T: Pod> Pod for [T] {
 }
 
-macro_rules! imp {
+macro_rules! imp_pod {
     ($($path:path)*) => {
         $(unsafe impl Pod for $path {})*
     }
 }
 
-imp! {
+imp_pod! {
     u8
     u16
     u32
@@ -153,4 +144,43 @@ imp! {
     c::ucred
     c::in_pktinfo
     c::in6_pktinfo
+}
+
+/// Marker trait for types without padding
+///
+/// # Safety
+///
+/// Types that implement this must not have padding bytes
+pub unsafe trait Packed {}
+
+unsafe impl<T: Packed> Packed for [T] {
+}
+
+macro_rules! imp_packed {
+    ($($path:path)*) => {
+        $(unsafe impl Packed for $path {})*
+    }
+}
+
+imp_packed! {
+    u8
+    u16
+    u32
+    u64
+    u128
+    usize
+    i8
+    i16
+    i32
+    i64
+    i128
+    isize
+}
+
+/// Returns the object representation of `t`
+pub fn as_bytes<T: Packed + ?Sized>(t: &T) -> &[u8] {
+    unsafe {
+        let ptr = t as *const _ as *const u8;
+        std::slice::from_raw_parts(ptr, mem::size_of_val(t))
+    }
 }

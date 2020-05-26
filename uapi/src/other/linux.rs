@@ -2,7 +2,6 @@ use crate::*;
 use std::mem::MaybeUninit;
 
 #[man(eventfd(2))]
-#[notest]
 pub fn eventfd(initval: c::c_uint, flags: c::c_int) -> Result<OwnedFd> {
     let res = unsafe { c::eventfd(initval, flags) };
     map_err!(res).map(OwnedFd::new)
@@ -15,13 +14,12 @@ union EventFdUnion {
 }
 
 /// Reads from an eventfd file descriptor
-#[notest]
 pub fn eventfd_read(fd: c::c_int) -> Result<u64> {
     unsafe {
         let mut buf = EventFdUnion { num: 0 };
         let res = read(fd, &mut buf.buf)?;
         if res < 8 {
-            Err(Errno(c::EBADFD))
+            Err(Errno(c::EBADF))
         } else {
             Ok(buf.num)
         }
@@ -29,13 +27,12 @@ pub fn eventfd_read(fd: c::c_int) -> Result<u64> {
 }
 
 /// Writes to an eventfd file descriptor
-#[notest]
 pub fn eventfd_write(fd: c::c_int, num: u64) -> Result<()> {
     unsafe {
         let buf = EventFdUnion { num };
         let res = write(fd, &buf.buf)?;
         if res < 8 {
-            Err(Errno(c::EBADFD))
+            Err(Errno(c::EBADF))
         } else {
             Ok(())
         }
@@ -43,8 +40,7 @@ pub fn eventfd_write(fd: c::c_int, num: u64) -> Result<()> {
 }
 
 #[man(memfd_create(2))]
-#[notest]
-pub fn memfd_create<'a>(name: impl IntoUstr<'a>, flags: c::c_int) -> Result<OwnedFd> {
+pub fn memfd_create<'a>(name: impl IntoUstr<'a>, flags: c::c_uint) -> Result<OwnedFd> {
     let name = name.into_ustr();
     let res = unsafe {
         c::syscall(c::SYS_memfd_create, name.as_ptr() as usize, flags as usize)
@@ -53,7 +49,6 @@ pub fn memfd_create<'a>(name: impl IntoUstr<'a>, flags: c::c_int) -> Result<Owne
 }
 
 #[man(sysinfo(2))]
-#[notest]
 pub fn sysinfo() -> Result<c::sysinfo> {
     let mut sysinfo = MaybeUninit::uninit();
     let res = unsafe { c::sysinfo(sysinfo.as_mut_ptr()) };
@@ -61,7 +56,6 @@ pub fn sysinfo() -> Result<c::sysinfo> {
 }
 
 #[man(pipe2(2))]
-#[notest]
 pub fn pipe2(flags: c::c_int) -> Result<(OwnedFd, OwnedFd)> {
     let mut buf = [0; 2];
     let res = unsafe { c::pipe2(buf.as_mut_ptr(), flags) };
@@ -69,7 +63,6 @@ pub fn pipe2(flags: c::c_int) -> Result<(OwnedFd, OwnedFd)> {
 }
 
 #[man(syncfs(2))]
-#[notest]
 pub fn syncfs(fd: c::c_int) -> Result<()> {
     let res = unsafe { libc::syscall(c::SYS_syncfs, fd as usize) };
     map_err!(res).map(drop)

@@ -1,10 +1,7 @@
-use proc::test_if_root;
+use proc::*;
 use std::{ffi::CStr, fs, os::raw::c_int, path::Path};
 use tempfile::{tempdir, tempdir_in};
-use uapi::{
-    c::{self, AT_FDCWD},
-    *,
-};
+use uapi::*;
 
 fn tmpfs() -> OwnedFd {
     let fs = fsopen(ustr!("tmpfs"), 0).unwrap();
@@ -39,7 +36,7 @@ fn with_private_mount<T, F: FnOnce(&Path) -> T>(f: F) -> T {
         move_mount(
             *fs,
             Ustr::empty(),
-            AT_FDCWD,
+            c::AT_FDCWD,
             path,
             c::MOVE_MOUNT_F_EMPTY_PATH,
         )
@@ -67,7 +64,7 @@ fn move_mount1() {
                 move_mount(
                     *mnt,
                     Ustr::empty(),
-                    AT_FDCWD,
+                    c::AT_FDCWD,
                     p1,
                     c::MOVE_MOUNT_F_EMPTY_PATH,
                 )
@@ -78,7 +75,7 @@ fn move_mount1() {
                 move_mount(
                     *mnt,
                     Ustr::empty(),
-                    AT_FDCWD,
+                    c::AT_FDCWD,
                     p2,
                     c::MOVE_MOUNT_F_EMPTY_PATH,
                 )
@@ -87,11 +84,11 @@ fn move_mount1() {
                 assert!(p2.join(FILE).exists());
 
                 // open tree at p2 and move to p1
-                let mnt = open_tree(AT_FDCWD, p2, 0).unwrap();
+                let mnt = open_tree(c::AT_FDCWD, p2, 0).unwrap();
                 move_mount(
                     *mnt,
                     Ustr::empty(),
-                    AT_FDCWD,
+                    c::AT_FDCWD,
                     p1,
                     c::MOVE_MOUNT_F_EMPTY_PATH,
                 )
@@ -100,16 +97,16 @@ fn move_mount1() {
                 assert!(!p2.join(FILE).exists());
 
                 // move from p2 to p1
-                move_mount(AT_FDCWD, p1, AT_FDCWD, p2, 0).unwrap();
+                move_mount(c::AT_FDCWD, p1, c::AT_FDCWD, p2, 0).unwrap();
                 assert!(!p1.join(FILE).exists());
                 assert!(p2.join(FILE).exists());
 
                 // clone tree at p2 and attach to p1
-                let mnt = open_tree(AT_FDCWD, p2, c::OPEN_TREE_CLONE).unwrap();
+                let mnt = open_tree(c::AT_FDCWD, p2, c::OPEN_TREE_CLONE).unwrap();
                 move_mount(
                     *mnt,
                     Ustr::empty(),
-                    AT_FDCWD,
+                    c::AT_FDCWD,
                     p1,
                     c::MOVE_MOUNT_F_EMPTY_PATH,
                 )
@@ -128,7 +125,7 @@ fn fspick1() {
         move_mount(
             *mnt,
             Ustr::empty(),
-            AT_FDCWD,
+            c::AT_FDCWD,
             p1,
             c::MOVE_MOUNT_F_EMPTY_PATH,
         )
@@ -137,7 +134,7 @@ fn fspick1() {
         fs::create_dir(p1.join("a")).unwrap();
 
         // make read-only
-        let fs = fspick(AT_FDCWD, p1, 0).unwrap();
+        let fs = fspick(c::AT_FDCWD, p1, 0).unwrap();
         fsconfig_set_flag(*fs, CStr::from_bytes_with_nul(b"ro\0").unwrap()).unwrap();
         fsconfig_cmd_reconfigure(*fs).unwrap();
 

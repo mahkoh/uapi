@@ -1,6 +1,4 @@
-use proc::test_if_root;
-use std::{fs::metadata, os::unix::fs::PermissionsExt};
-use testutils::Tempdir;
+use testutils::*;
 use uapi::*;
 
 #[test]

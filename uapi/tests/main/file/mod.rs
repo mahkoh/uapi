@@ -1,7 +1,7 @@
 use cfg_if::cfg_if;
-use proc::test_if_root;
-use std::io::{IoSlice, IoSliceMut, Write};
-use testutils::{strace, Tempdir};
+use proc::*;
+use std::io::{IoSlice, IoSliceMut};
+use testutils::*;
 use uapi::*;
 
 cfg_if! {
@@ -38,7 +38,7 @@ fn read_write() {
 
     assert_eq!(buf, *output);
 
-    ftruncate(*fd, 0);
+    ftruncate(*fd, 0).unwrap();
 
     let xstat = fstat(*fd).unwrap();
     assert_eq!(0, xstat.st_size);
@@ -70,10 +70,10 @@ fn read_write() {
 
     assert_eq!(close(OwnedFd::new(-1)), Err(Errno(c::EBADF)));
 
-    let fd3 = dup(*fd).unwrap();
-    assert_eq!(fstat(*fd3).unwrap().st_ino, xstat.st_ino);
+    let fd3 = dup(*fd).unwrap().unwrap();
+    assert_eq!(fstat(fd3).unwrap().st_ino, xstat.st_ino);
     assert_eq!(
-        fstat(*dup2(*fd, *fd3).unwrap()).unwrap().st_ino,
+        fstat(*dup2(*fd, fd3).unwrap()).unwrap().st_ino,
         xstat.st_ino
     );
 
@@ -131,7 +131,7 @@ fn read_write() {
     let xstat = fstat(*fd).unwrap();
     assert_eq!(xstat.st_size, 0);
 
-    posix_fallocate(*fd, 1, 1);
+    posix_fallocate(*fd, 1, 1).unwrap();
 
     let xstat = fstat(*fd).unwrap();
     assert_eq!(xstat.st_size, 2);

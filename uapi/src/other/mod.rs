@@ -79,14 +79,12 @@ pub fn daemon(nochdir: bool, noclose: bool) -> Result<()> {
 }
 
 #[man(sethostname(2))]
-#[notest]
-pub fn sethostname(buf: &mut [u8]) -> Result<()> {
+pub fn sethostname(buf: &[u8]) -> Result<()> {
     let res = unsafe { c::sethostname(buf.as_ptr() as *const _, buf.len()) };
     map_err!(res).map(drop)
 }
 
 #[man(gethostname(2))]
-#[notest]
 ///
 /// This function returns `libc::ENAMETOOLONG` if the hostname does not fit in the supplied
 /// buffer. If the hostname is longer than 255 bytes (excluding the nul byte), then this
@@ -126,7 +124,6 @@ pub fn gethostname(buf: &mut [u8]) -> Result<&CStr> {
 }
 
 #[man(sync(2))]
-#[notest]
 pub fn sync() {
     unsafe { libc::sync() }
 }

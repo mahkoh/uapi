@@ -1,3 +1,4 @@
+use std::mem;
 use uapi::*;
 
 #[test]
@@ -14,8 +15,8 @@ fn test() {
 
     let mut buf = &buf[..];
 
-    let (_, hdr2, data1) = cmsg_read(&mut buf).unwrap();
-    let (_, hdr3, data2) = cmsg_read(&mut buf).unwrap();
+    let (_, _, data1) = cmsg_read(&mut buf).unwrap();
+    let (_, _, data2) = cmsg_read(&mut buf).unwrap();
 
     assert_eq!(data1, b"hello world");
     assert_eq!(data2, b"ayo hol up");
@@ -28,7 +29,9 @@ fn invalid() {
 
     assert_eq!(cmsg_read(&mut &[][..]).err().unwrap(), Errno(c::EINVAL));
     assert_eq!(
-        cmsg_read(&mut as_bytes(&hdr)).err().unwrap(),
+        cmsg_read(&mut &[0u8; mem::size_of::<c::cmsghdr>()][..])
+            .err()
+            .unwrap(),
         Errno(c::EINVAL)
     );
     assert_eq!(

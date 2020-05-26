@@ -1,3 +1,5 @@
+#![allow(non_snake_case)]
+
 use crate::*;
 use std::{convert::TryInto, ffi::CStr, ptr};
 
@@ -73,7 +75,6 @@ pub fn waitpid(pid: c::pid_t, options: c::c_int) -> Result<(c::pid_t, c::c_int)>
 }
 
 #[man(chroot(2))]
-#[notest]
 pub fn chroot<'a>(path: impl IntoUstr<'a>) -> Result<()> {
     let path = path.into_ustr();
     let res = unsafe { c::chroot(path.as_ptr()) };
@@ -81,58 +82,32 @@ pub fn chroot<'a>(path: impl IntoUstr<'a>) -> Result<()> {
 }
 
 #[man(execve(2))]
-#[notest]
-pub fn execve<'a, 'b, 'c>(
+pub fn execve<'a>(
     pathname: impl IntoUstr<'a>,
-    argv: impl Iterator<Item = &'b Ustr>,
-    envp: impl Iterator<Item = &'c Ustr>,
+    argv: &UstrPtr,
+    envp: &UstrPtr,
 ) -> Result<()> {
     let pathname = pathname.into_ustr();
-    let mut argv: Vec<_> = argv.map(|v| v.as_ptr()).collect();
-    let mut envp: Vec<_> = envp.map(|v| v.as_ptr()).collect();
-    argv.push(ptr::null());
-    envp.push(ptr::null());
     let res = unsafe { c::execve(pathname.as_ptr(), argv.as_ptr(), envp.as_ptr()) };
     map_err!(res).map(drop)
 }
 
 #[man(execv(3))]
-#[notest]
-pub fn execv<'a, 'b>(
-    pathname: impl IntoUstr<'a>,
-    argv: impl Iterator<Item = &'b Ustr>,
-) -> Result<()> {
+pub fn execv<'a, 'b>(pathname: impl IntoUstr<'a>, argv: &UstrPtr) -> Result<()> {
     let pathname = pathname.into_ustr();
-    let mut argv: Vec<_> = argv.map(|v| v.as_ptr()).collect();
-    argv.push(ptr::null());
     let res = unsafe { c::execv(pathname.as_ptr(), argv.as_ptr()) };
     map_err!(res).map(drop)
 }
 
 #[man(execvp(3))]
-#[notest]
-pub fn execvp<'a, 'b>(
-    pathname: impl IntoUstr<'a>,
-    argv: impl IntoIterator<Item = &'b Ustr>,
-) -> Result<()> {
+pub fn execvp<'a, 'b>(pathname: impl IntoUstr<'a>, argv: &UstrPtr) -> Result<()> {
     let pathname = pathname.into_ustr();
-    let mut argv: Vec<_> = argv.into_iter().map(|v| v.as_ptr()).collect();
-    argv.push(ptr::null());
     let res = unsafe { c::execvp(pathname.as_ptr(), argv.as_ptr()) };
     map_err!(res).map(drop)
 }
 
 #[man(fexecve(3))]
-#[notest]
-pub fn fexecve<'b, 'c>(
-    fd: c::c_int,
-    argv: impl IntoIterator<Item = &'b Ustr>,
-    envp: impl IntoIterator<Item = &'c Ustr>,
-) -> Result<()> {
-    let mut argv: Vec<_> = argv.into_iter().map(|v| v.as_ptr()).collect();
-    let mut envp: Vec<_> = envp.into_iter().map(|v| v.as_ptr()).collect();
-    argv.push(ptr::null());
-    envp.push(ptr::null());
+pub fn fexecve(fd: c::c_int, argv: &UstrPtr, envp: &UstrPtr) -> Result<()> {
     let res = unsafe { c::fexecve(fd, argv.as_ptr(), envp.as_ptr()) };
     map_err!(res).map(drop)
 }
@@ -148,59 +123,50 @@ pub fn getcwd(buf: &mut [u8]) -> Result<&CStr> {
 }
 
 #[man(setuid(2))]
-#[notest]
 pub fn setuid(uid: c::uid_t) -> Result<()> {
     let res = unsafe { c::setuid(uid) };
     map_err!(res).map(drop)
 }
 
 #[man(seteuid(2))]
-#[notest]
 pub fn seteuid(uid: c::uid_t) -> Result<()> {
     let res = unsafe { c::seteuid(uid) };
     map_err!(res).map(drop)
 }
 
 #[man(setgid(2))]
-#[notest]
 pub fn setgid(gid: c::gid_t) -> Result<()> {
     let res = unsafe { c::setgid(gid) };
     map_err!(res).map(drop)
 }
 
 #[man(setegid(2))]
-#[notest]
 pub fn setegid(gid: c::gid_t) -> Result<()> {
     let res = unsafe { c::setegid(gid) };
     map_err!(res).map(drop)
 }
 
 #[man(getuid(2))]
-#[notest]
 pub fn getuid() -> c::uid_t {
     unsafe { c::getuid() }
 }
 
 #[man(geteuid(2))]
-#[notest]
 pub fn geteuid() -> c::uid_t {
     unsafe { c::geteuid() }
 }
 
 #[man(getgid(2))]
-#[notest]
 pub fn getgid() -> c::gid_t {
     unsafe { c::getgid() }
 }
 
 #[man(getegid(2))]
-#[notest]
 pub fn getegid() -> c::gid_t {
     unsafe { c::getegid() }
 }
 
 #[man(getgroups(2))]
-#[notest]
 pub fn getgroups(grouplist: &mut [c::gid_t]) -> Result<&mut [c::gid_t]> {
     let len = grouplist.len().try_into().unwrap_or(c::c_int::max_value());
     let res = unsafe { c::getgroups(len, grouplist.as_mut_ptr()) };
@@ -209,20 +175,17 @@ pub fn getgroups(grouplist: &mut [c::gid_t]) -> Result<&mut [c::gid_t]> {
 }
 
 #[man(setgroups(2))]
-#[notest]
 pub fn setgroups(grouplist: &[c::gid_t]) -> Result<()> {
     let res = unsafe { c::setgroups(grouplist.len(), grouplist.as_ptr()) };
     map_err!(res).map(drop)
 }
 
 #[man(getpgrp(2))]
-#[notest]
 pub fn getpgrp() -> c::pid_t {
     unsafe { c::getpgrp() }
 }
 
 #[man(setpgid(2))]
-#[notest]
 pub fn setpgid(pid: c::pid_t, pgid: c::pid_t) -> Result<()> {
     let res = unsafe { c::setpgid(pid, pgid) };
     map_err!(res).map(drop)
@@ -234,20 +197,17 @@ pub fn getpid() -> c::pid_t {
 }
 
 #[man(getppid(2))]
-#[notest]
 pub fn getppid() -> c::pid_t {
     unsafe { c::getppid() }
 }
 
 #[man(setsid(2))]
-#[notest]
 pub fn setsid() -> Result<c::pid_t> {
     let res = unsafe { c::setsid() };
     map_err!(res)
 }
 
 #[man(getsid(2))]
-#[notest]
 pub fn getsid(pid: c::pid_t) -> c::pid_t {
     unsafe { c::getsid(pid) }
 }
@@ -261,21 +221,18 @@ pub fn pause() {
 }
 
 #[man(setresuid(2))]
-#[notest]
 pub fn setresuid(ruid: c::uid_t, euid: c::uid_t, suid: c::uid_t) -> Result<()> {
     let res = unsafe { c::setresuid(ruid, euid, suid) };
     map_err!(res).map(drop)
 }
 
 #[man(setresgid(2))]
-#[notest]
 pub fn setresgid(rgid: c::gid_t, egid: c::gid_t, sgid: c::gid_t) -> Result<()> {
     let res = unsafe { c::setresgid(rgid, egid, sgid) };
     map_err!(res).map(drop)
 }
 
 #[man(getresuid(2))]
-#[notest]
 pub fn getresuid() -> Result<(c::uid_t, c::uid_t, c::uid_t)> {
     let (mut ruid, mut euid, mut suid) = (0, 0, 0);
     let res = unsafe { c::getresuid(&mut ruid, &mut euid, &mut suid) };
@@ -283,7 +240,6 @@ pub fn getresuid() -> Result<(c::uid_t, c::uid_t, c::uid_t)> {
 }
 
 #[man(getresgid(2))]
-#[notest]
 pub fn getresgid() -> Result<(c::gid_t, c::gid_t, c::gid_t)> {
     let (mut rgid, mut egid, mut sgid) = (0, 0, 0);
     let res = unsafe { c::getresgid(&mut rgid, &mut egid, &mut sgid) };

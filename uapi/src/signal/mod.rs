@@ -9,7 +9,6 @@ cfg_if! {
 }
 
 #[man(raise(3))]
-#[notest]
 pub fn raise(sig: c::c_int) -> Result<()> {
     let res = unsafe { c::raise(sig) };
     map_err!(res).map(drop)

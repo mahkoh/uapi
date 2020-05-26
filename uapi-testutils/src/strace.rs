@@ -1,4 +1,4 @@
-use std::{io::Write, panic::AssertUnwindSafe};
+use std::{panic::AssertUnwindSafe};
 use uapi::*;
 
 pub fn strace<T, F: FnOnce() -> T>(trace: bool, f: F) -> T {
@@ -79,7 +79,7 @@ pub fn strace<T, F: FnOnce() -> T>(trace: bool, f: F) -> T {
     let res = std::panic::catch_unwind(AssertUnwindSafe(f));
 
     eventfd_write(*stop_efd, 1).unwrap();
-    thread.join();
+    thread.join().unwrap();
 
     match res {
         Ok(r) => r,

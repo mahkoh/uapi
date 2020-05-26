@@ -1,7 +1,4 @@
-#![allow(non_snake_case)]
-
 use crate::*;
-use std::ptr;
 
 #[man(setns(2))]
 #[notest]
@@ -18,19 +15,14 @@ pub fn unshare(flags: c::c_int) -> Result<()> {
 }
 
 #[man(execveat(2))]
-#[notest]
-pub fn execveat<'a, 'b, 'c>(
+pub fn execveat<'a>(
     dirfd: c::c_int,
     pathname: impl IntoUstr<'a>,
-    argv: impl Iterator<Item = &'a Ustr>,
-    envp: impl Iterator<Item = &'b Ustr>,
+    argv: &UstrPtr,
+    envp: &UstrPtr,
     flags: c::c_int,
 ) -> Result<()> {
     let pathname = pathname.into_ustr();
-    let mut argv: Vec<_> = argv.map(|v| v.as_ptr()).collect();
-    let mut envp: Vec<_> = envp.map(|v| v.as_ptr()).collect();
-    argv.push(ptr::null());
-    envp.push(ptr::null());
     let res = unsafe {
         c::syscall(
             c::SYS_execveat,
@@ -45,17 +37,12 @@ pub fn execveat<'a, 'b, 'c>(
 }
 
 #[man(execvpe(3))]
-#[notest]
 pub fn execvpe<'a, 'b, 'c>(
     pathname: impl IntoUstr<'a>,
-    argv: impl Iterator<Item = &'a Ustr>,
-    envp: impl Iterator<Item = &'b Ustr>,
+    argv: &UstrPtr,
+    envp: &UstrPtr,
 ) -> Result<()> {
     let pathname = pathname.into_ustr();
-    let mut argv: Vec<_> = argv.map(|v| v.as_ptr()).collect();
-    let mut envp: Vec<_> = envp.map(|v| v.as_ptr()).collect();
-    argv.push(ptr::null());
-    envp.push(ptr::null());
     let res = unsafe { c::execvpe(pathname.as_ptr(), argv.as_ptr(), envp.as_ptr()) };
     map_err!(res).map(drop)
 }

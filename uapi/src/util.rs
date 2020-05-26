@@ -50,19 +50,6 @@ extern "C" {
     fn uapi_black_box(ptr: *const u8) -> *mut u8;
 }
 
-/// Returns the argument
-///
-/// However:
-///
-/// 1. If the argument was derived from a mutable reference, the compiler cannot
-///    assume anything about the value of the pointed-to object after the call.
-/// 2. The compiler does not know anything about the origin of the returned pointer.
-///
-/// This implementation currently works but should be replaced by a compiler intrinsic.
-pub(crate) fn black_box_id<T>(ptr: *const T) -> *mut T {
-    unsafe { uapi_black_box(ptr as *const _) as *mut _ }
-}
-
 /// Does nothing
 ///
 /// However:

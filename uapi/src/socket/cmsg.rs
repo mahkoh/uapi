@@ -62,6 +62,9 @@ pub fn cmsg_read<'a>(buf: &mut &'a [u8]) -> Result<(usize, c::cmsghdr, &'a [u8])
         Ok(l) => l,
         _ => return einval(),
     };
+    if cmsg_len < align(HDR_SIZE) {
+        return einval();
+    }
     if usize::max_value() - cmsg_len < ALIGN {
         return einval();
     }

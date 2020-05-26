@@ -2,7 +2,7 @@
 
 use crate::upstream::{
     dir::*, errno::*, fcntl::*, fd::*, file::*, ioctl::*, mount::*, other::*, pod::*,
-    poll::*, process::*, ptrace::*, result::*, signal::*, socket::*, ustr::*, util::*,
+    poll::*, process::*, result::*, signal::*, socket::*, ustr::*, util::*,
 };
 use proc::*;
 use testutils::*;
@@ -25,7 +25,6 @@ mod upstream {
     pub mod pod;
     pub mod poll;
     pub mod process;
-    pub mod ptrace;
     pub mod result;
     pub mod signal;
     pub mod socket;

@@ -18,7 +18,7 @@ pub fn signalfd_read(
     let res = unsafe { c::read(fd, buf as *mut _ as *mut _, SIZE * buf.len()) };
     map_err!(res)?;
     if res as usize % SIZE != 0 {
-        return Err(Errno(c::EBADFD));
+        return Err(Errno(c::EBADF));
     }
     Ok(&mut buf[..res as usize / SIZE])
 }

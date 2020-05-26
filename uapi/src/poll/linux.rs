@@ -1,15 +1,13 @@
 use crate::*;
-use std::ptr;
+use std::{convert::TryInto, ptr};
 
 #[man(epoll_create1(2))]
-#[notest]
 pub fn epoll_create1(flags: c::c_int) -> Result<OwnedFd> {
     let res = unsafe { c::epoll_create1(flags) };
     map_err!(res).map(OwnedFd::new)
 }
 
 #[man(epoll_ctl(2))]
-#[notest]
 pub fn epoll_ctl(
     epfd: c::c_int,
     op: c::c_int,
@@ -28,13 +26,12 @@ pub fn epoll_ctl(
 }
 
 #[man(epoll_wait(2))]
-#[notest]
 pub fn epoll_wait(
     epfd: c::c_int,
     events: &mut [c::epoll_event],
     timeout: c::c_int,
-) -> Result<c::c_int> {
-    let res =
-        unsafe { c::epoll_wait(epfd, events.as_mut_ptr(), events.len() as _, timeout) };
-    map_err!(res)
+) -> Result<usize> {
+    let len = events.len().try_into().unwrap_or(c::c_int::max_value());
+    let res = unsafe { c::epoll_wait(epfd, events.as_mut_ptr(), len, timeout) };
+    map_err!(res).map(|v| v as usize)
 }
