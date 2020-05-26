@@ -1,8 +1,9 @@
 use crate::*;
-use std::mem;
 pub use fuckrustfmt::*;
+use std::mem;
 
-#[rustfmt::ignore]
+/// fuck rustfmt for forcing me to reorganize my code just to disable it on a section
+#[rustfmt::skip]
 mod fuckrustfmt {
     /*
     sock_opt produces setsockopt_* and getsockopt_* functions
