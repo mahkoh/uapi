@@ -12,5 +12,6 @@ mod mount;
 mod other;
 mod poll;
 mod result;
+mod socket;
 mod ustr;
 mod util;

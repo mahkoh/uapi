@@ -1,4 +1,4 @@
-use std::panic::AssertUnwindSafe;
+use std::{io::Write, panic::AssertUnwindSafe};
 use uapi::*;
 
 pub fn strace<T, F: FnOnce() -> T>(trace: bool, f: F) -> T {
@@ -13,9 +13,13 @@ pub fn strace<T, F: FnOnce() -> T>(trace: bool, f: F) -> T {
     let stop_efd = eventfd(0, 0).unwrap();
     let stop_efd_copy = stop_efd.borrow();
 
-    std::thread::spawn(move || {
+    let thread = std::thread::spawn(move || {
         let mut command = std::process::Command::new("strace")
             // .arg("-f")
+            .arg("-v")
+            .arg("-s")
+            .arg("999")
+            // .arg("-X").arg("raw")
             .arg("-p")
             .arg(id.to_string())
             .stderr(std::process::Stdio::piped())
@@ -25,17 +29,21 @@ pub fn strace<T, F: FnOnce() -> T>(trace: bool, f: F) -> T {
         let stderr = OwnedFd::from(command.stderr.take().unwrap());
         fcntl_setfl(*stderr, fcntl_getfl(*stderr).unwrap() | c::O_NONBLOCK).unwrap();
         let mut buf = [0; 1024];
+        let mut strace =
+            open("strace", c::O_WRONLY | c::O_TRUNC | c::O_CREAT, 0o777).unwrap();
         let mut pipe = || loop {
             let res = read(*stderr, &mut buf);
             match res {
+                Ok(0) => break,
+                Err(Errno(c::EAGAIN)) => break,
                 Ok(n) => {
-                    std::io::Write::write_all(&mut Fd::new(1), &buf[..n]).unwrap();
+                    // std::io::Write::write_all(&mut Fd::new(2), &buf[..n]).unwrap();
+                    std::io::Write::write_all(&mut strace, &buf[..n]).unwrap();
                     if !notified_parent {
                         notified_parent = true;
                         eventfd_write(*start_efd_copy, 1).unwrap();
                     }
                 }
-                Err(Errno(c::EAGAIN)) => break,
                 e => {
                     e.unwrap();
                 }
@@ -64,7 +72,6 @@ pub fn strace<T, F: FnOnce() -> T>(trace: bool, f: F) -> T {
         }
         command.kill().unwrap();
         pipe();
-        eventfd_write(*start_efd_copy, 1).unwrap();
     });
 
     eventfd_read(*start_efd).unwrap();
@@ -72,7 +79,7 @@ pub fn strace<T, F: FnOnce() -> T>(trace: bool, f: F) -> T {
     let res = std::panic::catch_unwind(AssertUnwindSafe(f));
 
     eventfd_write(*stop_efd, 1).unwrap();
-    eventfd_read(*start_efd).unwrap();
+    thread.join();
 
     match res {
         Ok(r) => r,

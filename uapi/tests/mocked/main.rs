@@ -1,25 +1,11 @@
 #![allow(unused_imports, dead_code)]
 
 use crate::upstream::{
-    dir::*,
-    errno::*,
-    fcntl::*,
-    fd::*,
-    file::*,
-    ioctl::*,
-    mount::*,
-    other::*,
-    poll::*,
-    process::*,
-    result::*,
-    ustr::{
-        bstr::Bstr, bytes::Bytes, into::IntoUstr, read::UapiReadExt, ustr::Ustr,
-        ustring::Ustring,
-    },
-    util::*,
-    *,
+    dir::*, errno::*, fcntl::*, fd::*, file::*, ioctl::*, mount::*, other::*, pod::*,
+    poll::*, process::*, ptrace::*, result::*, signal::*, socket::*, ustr::*, util::*,
 };
 use proc::*;
+use testutils::*;
 
 mod c;
 
@@ -33,12 +19,16 @@ mod upstream {
     pub mod fcntl;
     pub mod fd;
     pub mod file;
-    pub mod process;
     pub mod ioctl;
     pub mod mount;
     pub mod other;
+    pub mod pod;
     pub mod poll;
+    pub mod process;
+    pub mod ptrace;
     pub mod result;
+    pub mod signal;
+    pub mod socket;
     pub mod ustr;
     pub mod util;
 }

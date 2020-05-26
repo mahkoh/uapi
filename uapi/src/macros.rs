@@ -29,3 +29,10 @@ macro_rules! map_err {
         }
     }};
 }
+
+macro_rules! usize_right_shift {
+    ($x:expr) => {{
+        const HALF_USIZE: usize = std::mem::size_of::<usize>() / 2;
+        (($x) >> HALF_USIZE >> HALF_USIZE)
+    }};
+}

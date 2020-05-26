@@ -88,7 +88,7 @@ impl Bstr {
 
     /// Shortcut for `self.as_bytes().len()`
     pub fn len(&self) -> usize {
-        self.bytes.len() - 1
+        self.bytes.len()
     }
 
     /// Shortcut for `self.len() == 0`

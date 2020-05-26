@@ -9,14 +9,56 @@ cfg_if::cfg_if! {
 }
 
 #[man(fork(2))]
-#[notest]
-pub fn fork() -> Result<c::pid_t> {
-    let res = unsafe { c::fork() };
+///
+/// # Safety
+///
+/// `fork` is unsafe in multi-threaded programs.
+///
+/// Consider the following example:
+///
+/// ```ignore
+/// #![feature(thread_id_value)]
+///
+/// use std::sync::atomic::{AtomicI32, AtomicPtr};
+/// use std::sync::atomic::Ordering::SeqCst;
+/// use std::{thread, ptr};
+///
+/// pub fn f() {
+///     static I: AtomicI32 = AtomicI32::new(0);
+///     static D: AtomicPtr<i32> = AtomicPtr::new(ptr::null_mut());
+///
+///     let data = Box::leak(Box::new(0));
+///     let tid = gettid();
+///     match I.load(SeqCst) {
+///         0 => {
+///             I.store(tid, SeqCst);
+///             /*
+///              * Assumption for safety: No call to `f` can have the same `tid` while we're
+///              * in the critical section that spans this comment.
+///              */
+///             D.store(data, SeqCst);
+///         },
+///         n if n == tid => {
+///             /* D has been set to a valid pointer because of the assumption above */
+///             let _v = unsafe { *D.load(SeqCst) };
+///         },
+///         _ => { },
+///     }
+/// }
+/// ```
+///
+/// If `fork` is called while another thread is in the critical section, `I` will be
+/// initialized in the child but `D` won't. If the child creates a new thread, the new
+/// thread might have the same `tid` as the thread in the critical section. Therefore the
+/// child thread will dereference a null pointer.
+///
+/// Consult the upstream documentation.
+pub unsafe fn fork() -> Result<c::pid_t> {
+    let res = c::fork();
     map_err!(res)
 }
 
 #[man(wait(2))]
-#[notest]
 pub fn wait() -> Result<(c::pid_t, c::c_int)> {
     let mut wstatus = 0;
     let res = unsafe { c::wait(&mut wstatus) };
@@ -24,7 +66,6 @@ pub fn wait() -> Result<(c::pid_t, c::c_int)> {
 }
 
 #[man(waitpid(2))]
-#[notest]
 pub fn waitpid(pid: c::pid_t, options: c::c_int) -> Result<(c::pid_t, c::c_int)> {
     let mut wstatus = 0;
     let res = unsafe { c::waitpid(pid, &mut wstatus, options) };
@@ -97,7 +138,6 @@ pub fn fexecve<'b, 'c>(
 }
 
 #[man(getcwd(3))]
-#[notest]
 pub fn getcwd(buf: &mut [u8]) -> Result<&CStr> {
     let res = unsafe { c::getcwd(buf.as_mut_ptr() as *mut _, buf.len()) };
     if res.is_null() {
@@ -189,7 +229,6 @@ pub fn setpgid(pid: c::pid_t, pgid: c::pid_t) -> Result<()> {
 }
 
 #[man(getpid(2))]
-#[notest]
 pub fn getpid() -> c::pid_t {
     unsafe { c::getpid() }
 }
@@ -289,4 +328,49 @@ pub fn clock_nanosleep(
         )
     };
     map_err!(res).map(drop)
+}
+
+#[man(kill(2))]
+pub fn kill(pid: c::pid_t, sig: c::c_int) -> Result<()> {
+    let res = unsafe { c::kill(pid, sig) };
+    map_err!(res).map(drop)
+}
+#[man(wait(2))]
+pub fn WEXITSTATUS(s: c::c_int) -> c::c_int {
+    unsafe { c::WEXITSTATUS(s) }
+}
+
+#[man(wait(2))]
+pub fn WTERMSIG(s: c::c_int) -> c::c_int {
+    unsafe { c::WTERMSIG(s) }
+}
+
+#[man(wait(2))]
+pub fn WSTOPSIG(s: c::c_int) -> c::c_int {
+    unsafe { c::WSTOPSIG(s) }
+}
+
+#[man(wait(2))]
+pub fn WIFEXITED(s: c::c_int) -> bool {
+    unsafe { c::WIFEXITED(s) }
+}
+
+#[man(wait(2))]
+pub fn WIFSTOPPED(s: c::c_int) -> bool {
+    unsafe { c::WIFSTOPPED(s) }
+}
+
+#[man(wait(2))]
+pub fn WIFSIGNALED(s: c::c_int) -> bool {
+    unsafe { c::WIFSIGNALED(s) }
+}
+
+#[man(wait(2))]
+pub fn WIFCONTINUED(s: c::c_int) -> bool {
+    unsafe { c::WIFCONTINUED(s) }
+}
+
+#[man(wait(2))]
+pub fn WCOREDUMP(s: c::c_int) -> bool {
+    unsafe { c::WCOREDUMP(s) }
 }

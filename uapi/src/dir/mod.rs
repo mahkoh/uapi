@@ -5,7 +5,6 @@ use std::{
 };
 
 #[man(opendir(3))]
-#[notest]
 pub fn opendir<'a>(name: impl IntoUstr<'a>) -> Result<Dir> {
     let name = name.into_ustr();
     let dir = unsafe { c::opendir(name.as_ptr()) };
@@ -17,7 +16,6 @@ pub fn opendir<'a>(name: impl IntoUstr<'a>) -> Result<Dir> {
 }
 
 #[man(fdopendir(3))]
-#[notest]
 pub fn fdopendir(fd: OwnedFd) -> Result<Dir> {
     let fd = fd.unwrap();
     let dir = unsafe { c::fdopendir(fd) };
@@ -29,7 +27,6 @@ pub fn fdopendir(fd: OwnedFd) -> Result<Dir> {
 }
 
 #[man(readdir(3))]
-#[notest]
 #[allow(clippy::should_implement_trait)] // https://github.com/rust-lang/rust-clippy/issues/5004
 pub fn readdir<'a>(dir: &'a mut c::DIR) -> Option<Result<Dirent<'a>>> {
     set_errno(0);
@@ -46,25 +43,21 @@ pub fn readdir<'a>(dir: &'a mut c::DIR) -> Option<Result<Dirent<'a>>> {
 }
 
 #[man(rewinddir(3))]
-#[notest]
 pub fn rewinddir(dir: &mut c::DIR) {
     unsafe { c::rewinddir(dir) }
 }
 
 #[man(seekdir(3))]
-#[notest]
 pub fn seekdir(dir: &mut c::DIR, loc: c::c_long) {
     unsafe { c::seekdir(dir, loc) }
 }
 
 #[man(telldir(3))]
-#[notest]
 pub fn telldir(dir: &mut c::DIR) -> c::c_long {
     unsafe { c::telldir(dir) }
 }
 
 #[man(dirfd(3))]
-#[notest]
 pub fn dirfd(dir: &mut c::DIR) -> c::c_int {
     unsafe { c::dirfd(dir) }
 }

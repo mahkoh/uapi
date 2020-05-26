@@ -150,6 +150,7 @@ impl<'a> Iterator for InotifyIter<'a> {
         }
         unsafe {
             // prepare an aligned instance of event
+            #[repr(C)]
             union EventBuf {
                 event: c::inotify_event,
                 buf: [u8; SIZE],
@@ -240,8 +241,7 @@ pub const fn minor(dev: c::dev_t) -> u64 {
 }
 
 #[man(makedev(3))]
-#[notest]
-pub fn makedev(major: u64, minor: u64) -> c::dev_t {
+pub const fn makedev(major: u64, minor: u64) -> c::dev_t {
     ((major & 0xffff_f000) << 32)
         | ((major & 0xfff) << 8)
         | ((minor & 0xffff_ff00) << 12)
@@ -270,18 +270,19 @@ pub fn fstatfs(fd: c::c_int) -> Result<c::statfs> {
 pub fn preadv2(
     fd: c::c_int,
     bufs: &mut [IoSliceMut<'_>],
-    offset: c::off_t,
+    offset: c::loff_t,
     flags: c::c_int,
 ) -> Result<usize> {
     let len = i32::try_from(bufs.len()).unwrap_or(i32::max_value());
     let val = unsafe {
         c::syscall(
             c::SYS_preadv2,
-            fd,
-            bufs.as_mut_ptr() as *mut c::iovec,
-            len,
-            offset,
-            flags,
+            fd as usize,
+            bufs.as_mut_ptr() as *mut c::iovec as usize,
+            len as usize,
+            offset as usize,
+            usize_right_shift!(offset) as usize,
+            flags as usize,
         )
     };
     map_err!(val).map(|v| v as usize)
@@ -292,18 +293,19 @@ pub fn preadv2(
 pub fn pwritev2(
     fd: c::c_int,
     bufs: &[IoSlice<'_>],
-    offset: c::off_t,
+    offset: c::loff_t,
     flags: c::c_int,
 ) -> Result<usize> {
     let len = i32::try_from(bufs.len()).unwrap_or(i32::max_value());
     let val = unsafe {
         c::syscall(
             c::SYS_pwritev2,
-            fd,
-            bufs.as_ptr() as *const c::iovec,
-            len,
-            offset,
-            flags,
+            fd as usize,
+            bufs.as_ptr() as *const c::iovec as usize,
+            len as usize,
+            offset as usize,
+            usize_right_shift!(offset) as usize,
+            flags as usize,
         )
     };
     map_err!(val).map(|v| v as usize)
@@ -314,4 +316,16 @@ pub fn pwritev2(
 pub fn dup3(old: c::c_int, new: c::c_int, flags: c::c_int) -> Result<OwnedFd> {
     let res = unsafe { c::dup3(old, new, flags) };
     map_err!(res).map(OwnedFd::new)
+}
+
+#[man(fallocate(2))]
+#[notest]
+pub fn fallocate(
+    fd: c::c_int,
+    mode: c::c_int,
+    offset: c::off_t,
+    len: c::off_t,
+) -> Result<()> {
+    let val = unsafe { c::fallocate(fd, mode, offset, len) };
+    map_err!(val).map(drop)
 }

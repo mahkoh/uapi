@@ -8,7 +8,7 @@ pub fn signalfd(fd: c::c_int, mask: &c::sigset_t, flags: c::c_int) -> Result<Own
     map_err!(res).map(OwnedFd::new)
 }
 
-/// Reads from an signalfd file descriptor and returns the elements read
+/// Reads from a signalfd file descriptor and returns the elements read
 #[notest]
 pub fn signalfd_read(
     fd: c::c_int,

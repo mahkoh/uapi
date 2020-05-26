@@ -25,15 +25,28 @@ const fn align(size: usize) -> usize {
 
 const HDR_SIZE: usize = mem::size_of::<c::cmsghdr>();
 
+#[repr(C)]
 union HdrBytes {
     hdr: c::cmsghdr,
     bytes: [u8; align(HDR_SIZE)],
 }
 
+/// Returns the number of bytes needed to store a cmsg with data-length `data_len`
+///
+/// See also the crate documentation.
 pub const fn cmsg_space(data_len: usize) -> usize {
     align(HDR_SIZE) + align(data_len)
 }
 
+/// Reads a cmsg from a buffer
+///
+/// This function will
+/// - advance the buffer by the used space
+/// - return the used space, the cmsg header, and the data buffer
+///
+/// Returns an error if no message could be read from the buffer.
+///
+/// See also the crate documentation.
 pub fn cmsg_read<'a>(buf: &mut &'a [u8]) -> Result<(usize, c::cmsghdr, &'a [u8])> {
     if buf.len() < align(HDR_SIZE) {
         return einval();
@@ -61,11 +74,17 @@ pub fn cmsg_read<'a>(buf: &mut &'a [u8]) -> Result<(usize, c::cmsghdr, &'a [u8])
     Ok((cmsg_space, hdr, data))
 }
 
-/// Writes a new cmsg to a buffer
+/// Writes a cmsg to a buffer
 ///
-/// - `hdr.cmsg_len` will be initialized by this function
-/// - `buf` will be advanced by the number of bytes used
-/// - re
+/// This function will
+/// - set `hdr.cmsg_len` to the correct value
+/// - write `hdr` and `data` to the buffer
+/// - advance the buffer by the used space
+/// - return the used space
+///
+/// Returns an error if there is not enough space in the buffer.
+///
+/// See also the crate documentation.
 pub fn cmsg_write<T: ?Sized>(
     buf: &mut &mut [u8],
     mut hdr: c::cmsghdr,
@@ -86,25 +105,4 @@ pub fn cmsg_write<T: ?Sized>(
     }
     *buf = &mut mem::replace(buf, &mut [])[cmsg_space..];
     Ok(cmsg_space)
-}
-
-#[test]
-fn test() {
-    let mut buf = [0; 1024];
-    let hdr = pod_zeroed::<c::cmsghdr>();
-
-    {
-        let mut buf = &mut buf[..];
-
-        cmsg_write(&mut buf, hdr, b"hello world").unwrap();
-        cmsg_write(&mut buf, hdr, b"ayo hol up").unwrap();
-    }
-
-    let mut buf = &buf[..];
-
-    let (_, hdr2, data1) = cmsg_read(&mut buf).unwrap();
-    let (_, hdr3, data2) = cmsg_read(&mut buf).unwrap();
-
-    assert_eq!(data1, b"hello world");
-    assert_eq!(data2, b"ayo hol up");
 }

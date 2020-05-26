@@ -8,6 +8,7 @@ pub fn eventfd(initval: c::c_uint, flags: c::c_int) -> Result<OwnedFd> {
     map_err!(res).map(OwnedFd::new)
 }
 
+#[repr(C)]
 union EventFdUnion {
     num: u64,
     buf: [u8; 8],
@@ -45,7 +46,9 @@ pub fn eventfd_write(fd: c::c_int, num: u64) -> Result<()> {
 #[notest]
 pub fn memfd_create<'a>(name: impl IntoUstr<'a>, flags: c::c_int) -> Result<OwnedFd> {
     let name = name.into_ustr();
-    let res = unsafe { c::syscall(c::SYS_memfd_create, name.as_ptr(), flags) };
+    let res = unsafe {
+        c::syscall(c::SYS_memfd_create, name.as_ptr() as usize, flags as usize)
+    };
     map_err!(res).map(|val| OwnedFd::new(val as _))
 }
 
@@ -68,6 +71,6 @@ pub fn pipe2(flags: c::c_int) -> Result<(OwnedFd, OwnedFd)> {
 #[man(syncfs(2))]
 #[notest]
 pub fn syncfs(fd: c::c_int) -> Result<()> {
-    let res = unsafe { libc::syscall(c::SYS_syncfs, fd) };
+    let res = unsafe { libc::syscall(c::SYS_syncfs, fd as usize) };
     map_err!(res).map(drop)
 }

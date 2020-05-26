@@ -1,5 +1,5 @@
-use crate::{einval, *};
-use std::mem;
+use crate::*;
+use std::{marker::PhantomData, mem};
 
 /// Marker trait for Pod types
 ///
@@ -32,33 +32,67 @@ pub fn pod_read<T: Pod, U: ?Sized>(u: &U) -> Result<T> {
     Ok(t)
 }
 
+/// Converts `u` into an iterator of `T`
+///
+/// The size of `u` must be a multiple of the size of `T`
+#[notest]
+pub fn pod_iter<'a, T: Pod + 'a, U: ?Sized>(
+    u: &'a U,
+) -> Result<impl Iterator<Item = T> + 'a> {
+    if mem::size_of::<T>() != 0 && mem::size_of_val(u) % mem::size_of::<T>() != 0 {
+        einval()
+    } else {
+        Ok(Iter {
+            buf: as_bytes(u),
+            _pd: PhantomData,
+        })
+    }
+}
+
+struct Iter<'a, T> {
+    buf: &'a [u8],
+    _pd: PhantomData<fn() -> T>,
+}
+
+impl<'a, T: Pod> Iterator for Iter<'a, T> {
+    type Item = T;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.buf.len() == 0 {
+            None
+        } else {
+            let t = pod_read_init(self.buf).unwrap();
+            self.buf = &self.buf[mem::size_of::<T>()..];
+            Some(t)
+        }
+    }
+}
+
 /// Converts an initial port of `u` to `T`
 ///
 /// The size of `u` must be equal to or larger than the size of `T`.
 #[notest]
 pub fn pod_read_init<T: Pod, U: ?Sized>(u: &U) -> Result<T> {
     let mut t = pod_zeroed();
-    pod_write_init(u, &mut t)?;
+    pod_write_common_prefix(u, &mut t)?;
     Ok(t)
 }
 
 /// Writes `u` to `t`
 ///
 /// `u` and `t` must have the same size.
-#[notest]
 pub fn pod_write<T: Pod + ?Sized, U: ?Sized>(u: &U, t: &mut T) -> Result<()> {
     if mem::size_of_val(t) != mem::size_of_val(u) {
         einval()
     } else {
-        pod_write_init(u, t)
+        pod_write_common_prefix(u, t)
     }
 }
 
 /// Writes an initial portion of `u` to `t`
 ///
 /// The size of `u` must be equal to or larger than the size of `t`.
-#[notest]
-pub fn pod_write_init<T: Pod + ?Sized, U: ?Sized>(u: &U, t: &mut T) -> Result<()> {
+fn pod_write_common_prefix<T: Pod + ?Sized, U: ?Sized>(u: &U, t: &mut T) -> Result<()> {
     if mem::size_of_val(t) > mem::size_of_val(u) {
         einval()
     } else {
@@ -68,6 +102,15 @@ pub fn pod_write_init<T: Pod + ?Sized, U: ?Sized>(u: &U, t: &mut T) -> Result<()
             std::ptr::copy_nonoverlapping(black_box_id(src), dst, mem::size_of_val(t));
         }
         Ok(())
+    }
+}
+
+/// Returns the object representation of `t`
+#[notest]
+pub fn as_bytes<T: ?Sized>(t: &T) -> &[u8] {
+    unsafe {
+        let ptr = t as *const _ as *const u8;
+        std::slice::from_raw_parts(black_box_id(ptr), mem::size_of_val(t))
     }
 }
 
@@ -108,4 +151,6 @@ imp! {
     c::cmsghdr
 
     c::ucred
+    c::in_pktinfo
+    c::in6_pktinfo
 }

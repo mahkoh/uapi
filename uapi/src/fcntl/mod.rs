@@ -1,28 +1,24 @@
 use crate::*;
 
 #[man("fcntl(2) with cmd = `F_GETFD`")]
-#[notest]
 pub fn fcntl_getfd(fd: c::c_int) -> Result<c::c_int> {
     let res = unsafe { c::fcntl(fd, c::F_GETFD) };
     map_err!(res)
 }
 
 #[man("fcntl(2) with cmd = `F_SETFD`")]
-#[notest]
 pub fn fcntl_setfd(fd: c::c_int, flags: c::c_int) -> Result<()> {
     let res = unsafe { c::fcntl(fd, c::F_SETFD, flags) };
     map_err!(res).map(drop)
 }
 
 #[man("fcntl(2) with cmd = `F_GETFL`")]
-#[notest]
 pub fn fcntl_getfl(fd: c::c_int) -> Result<c::c_int> {
     let res = unsafe { c::fcntl(fd, c::F_GETFL) };
     map_err!(res)
 }
 
 #[man("fcntl(2) with cmd = `F_SETFL`")]
-#[notest]
 pub fn fcntl_setfl(fd: c::c_int, flags: c::c_int) -> Result<()> {
     let res = unsafe { c::fcntl(fd, c::F_SETFL, flags) };
     map_err!(res).map(drop)

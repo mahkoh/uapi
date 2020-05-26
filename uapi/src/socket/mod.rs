@@ -46,14 +46,12 @@ imp! {
 }
 
 #[man(socket(2))]
-#[notest]
 pub fn socket(domain: c::c_int, ty: c::c_int, protocol: c::c_int) -> Result<OwnedFd> {
     let res = unsafe { c::socket(domain, ty, protocol) };
     map_err!(res).map(OwnedFd::new)
 }
 
 #[man(socketpair(2))]
-#[notest]
 pub fn socketpair(
     domain: c::c_int,
     ty: c::c_int,
@@ -65,14 +63,12 @@ pub fn socketpair(
 }
 
 #[man(bind(2))]
-#[notest]
 pub fn bind<T: SockAddr + ?Sized>(sockfd: c::c_int, addr: &T) -> Result<()> {
     let res = unsafe { c::bind(sockfd, addr as *const _ as *const _, to_addrlen(addr)?) };
     map_err!(res).map(drop)
 }
 
 #[man(connect(2))]
-#[notest]
 pub fn connect<T: SockAddr + ?Sized>(sockfd: c::c_int, addr: &T) -> Result<()> {
     let res =
         unsafe { c::connect(sockfd, addr as *const _ as *const _, to_addrlen(addr)?) };
@@ -80,7 +76,6 @@ pub fn connect<T: SockAddr + ?Sized>(sockfd: c::c_int, addr: &T) -> Result<()> {
 }
 
 #[man(listen(2))]
-#[notest]
 pub fn listen(sockfd: c::c_int, backlog: c::c_int) -> Result<()> {
     let res = unsafe { c::listen(sockfd, backlog) };
     map_err!(res).map(drop)
@@ -103,17 +98,16 @@ fn opt_to_sockaddr_mut<T: ?Sized>(
     addr: &mut Option<&mut T>,
     addrlen: &mut c::socklen_t,
 ) -> Result<(*mut c::sockaddr, *mut c::socklen_t)> {
-    match addr {
-        Some(addr) => {
-            *addrlen = to_addrlen(addr)?;
-            Ok((addr as *mut _ as *mut _, addrlen as *mut _))
+    match *addr {
+        Some(ref mut addr) => {
+            *addrlen = to_addrlen(*addr)?;
+            Ok((*addr as *mut _ as *mut _, addrlen as *mut _))
         }
         _ => Ok((ptr::null_mut(), ptr::null_mut())),
     }
 }
 
 #[man(accept(2))]
-#[notest]
 pub fn accept<T: SockAddr + ?Sized>(
     sockfd: c::c_int,
     mut addr: Option<&mut T>,
@@ -127,7 +121,6 @@ pub fn accept<T: SockAddr + ?Sized>(
 }
 
 #[man(getsockname(2))]
-#[notest]
 pub fn getsockname<T: SockAddr + ?Sized>(
     sockfd: c::c_int,
     addr: &mut T,
@@ -139,7 +132,6 @@ pub fn getsockname<T: SockAddr + ?Sized>(
 }
 
 #[man(getpeername(2))]
-#[notest]
 pub fn getpeername<T: SockAddr + ?Sized>(
     sockfd: c::c_int,
     addr: &mut T,
@@ -151,14 +143,12 @@ pub fn getpeername<T: SockAddr + ?Sized>(
 }
 
 #[man(recv(2))]
-#[notest]
 pub fn recv(sockfd: c::c_int, buf: &mut [u8], flags: c::c_int) -> Result<usize> {
     let res = unsafe { c::recv(sockfd, buf as *mut _ as *mut _, buf.len(), flags) };
     map_err!(res).map(|v| v as usize)
 }
 
 #[man(recvfrom(2))]
-#[notest]
 pub fn recvfrom<T: SockAddr + ?Sized>(
     sockfd: c::c_int,
     buf: &mut [u8],
@@ -181,14 +171,12 @@ pub fn recvfrom<T: SockAddr + ?Sized>(
 }
 
 #[man(send(2))]
-#[notest]
 pub fn send(sockfd: c::c_int, buf: &[u8], flags: c::c_int) -> Result<usize> {
     let res = unsafe { c::send(sockfd, buf as *const _ as *const _, buf.len(), flags) };
     map_err!(res).map(|v| v as usize)
 }
 
 #[man(sendto(2))]
-#[notest]
 pub fn sendto<T: SockAddr + ?Sized>(
     sockfd: c::c_int,
     buf: &[u8],
@@ -209,7 +197,6 @@ pub fn sendto<T: SockAddr + ?Sized>(
 }
 
 #[man(shutdown(2))]
-#[notest]
 pub fn shutdown(sockfd: c::c_int, how: c::c_int) -> Result<()> {
     let res = unsafe { c::shutdown(sockfd, how) };
     map_err!(res).map(drop)
@@ -234,15 +221,14 @@ pub fn sockaddr_none_mut<'a>() -> Option<&'a mut c::sockaddr> {
 /// Rusty version of a mutable `c::sockaddr`
 ///
 /// Use `sockaddr_none_mut` to avoid type inference errors
-pub struct MsghdrMut<'a, 'b, T: SockAddr + ?Sized = c::sockaddr> {
+pub struct MsghdrMut<'a, 'b, 'c, 'd, T: SockAddr + ?Sized = c::sockaddr> {
     pub iov: &'b mut [IoSliceMut<'a>],
-    pub control: Option<&'a mut [u8]>,
-    pub name: Option<&'a mut T>,
+    pub control: Option<&'c mut [u8]>,
+    pub name: Option<&'d mut T>,
     pub flags: c::c_int,
 }
 
 #[man(recvmsg(2))]
-#[notest]
 pub fn recvmsg<T: SockAddr + ?Sized>(
     sockfd: c::c_int,
     msghdr: &mut MsghdrMut<T>,
@@ -284,7 +270,6 @@ pub struct Msghdr<'a, T: SockAddr + ?Sized> {
 }
 
 #[man(sendmsg(2))]
-#[notest]
 pub fn sendmsg<'a, T: SockAddr + ?Sized>(
     sockfd: c::c_int,
     msghdr: &'a Msghdr<'a, T>,
@@ -307,98 +292,4 @@ pub fn sendmsg<'a, T: SockAddr + ?Sized>(
     map_err!(res)?;
 
     Ok(res as usize)
-}
-
-#[test]
-pub fn testw() {
-    strace(true, || {
-        let (a, b) = socketpair(c::AF_UNIX, c::SOCK_DGRAM, 0).unwrap();
-        setsockopt_so_passcred(*b, 1).unwrap();
-
-        let mut cmsg_buf = [0u8; 1024];
-        let cmsg_buf = {
-            let mut buf = &mut cmsg_buf[..];
-
-            let mut hdr: c::cmsghdr = pod_zeroed();
-            hdr.cmsg_level = c::SOL_SOCKET;
-            hdr.cmsg_type = c::SCM_RIGHTS;
-
-            let mut len = 0;
-            len += cmsg_write(&mut buf, hdr, &[1i32]).unwrap();
-            len += cmsg_write(&mut buf, hdr, &[1i32]).unwrap();
-            &cmsg_buf[..len]
-        };
-
-        let msghdr = Msghdr {
-            iov: &[IoSlice::new(b"a")],
-            control: Some(cmsg_buf),
-            name: sockaddr_none_ref(),
-        };
-        sendmsg(*a, &msghdr, 0).unwrap();
-
-        let mut buf = [0; 1024];
-        let mut cmsg_buf = [0; 1024];
-        let mut name: c::sockaddr_un = pod_zeroed();
-
-        let mut msghdr = MsghdrMut {
-            iov: &mut [IoSliceMut::new(&mut buf)],
-            control: Some(&mut cmsg_buf),
-            name: Some(&mut name),
-            flags: 0,
-        };
-
-        recvmsg(*b, &mut msghdr, 0).unwrap();
-
-        let mut cmsg_buf: &[u8] = msghdr.control.unwrap();
-        while let Ok((_, hdr, mut data)) = cmsg_read(&mut cmsg_buf) {
-            match (hdr.cmsg_level, hdr.cmsg_type) {
-                (c::SOL_SOCKET, c::SCM_RIGHTS) => {
-                    while !data.is_empty() {
-                        println!(
-                            "received fd {}",
-                            *OwnedFd::new(pod_read_init::<i32, _>(data).unwrap())
-                        );
-                        data = &data[4..];
-                    }
-                }
-                (c::SOL_SOCKET, c::SCM_CREDENTIALS) => {
-                    let cred: c::ucred = pod_read(data).unwrap();
-                    println!(
-                        "received credentials pid={}, uid={}, gid={}",
-                        cred.pid, cred.uid, cred.gid
-                    );
-                }
-                _ => {}
-            }
-        }
-        // let (hdr, data) = cmsg_read(&mut cmsg_buf).unwrap();
-        // println!("{}", pod_read::<i32, _>(data));
-    });
-}
-
-#[test]
-pub fn test() {
-    strace(true, || {
-        let mut name = b'a';
-        loop {
-            let s = socket(c::AF_INET, c::SOCK_STREAM, 0).unwrap();
-            let mut addr: c::sockaddr_in = pod_zeroed();
-            addr.sin_family = c::AF_INET as _;
-            addr.sin_port = 7777u16.to_be();
-            bind(*s, &addr).unwrap();
-            listen(*s, 0).unwrap();
-            setsockopt_so_passcred(*s, 1);
-            getsockopt_so_passcred(*s);
-            accept(*s, Some(&mut addr)).unwrap();
-            println!(
-                "{}.{}.{}.{}:{}",
-                (u32::from_be(addr.sin_addr.s_addr) & 0xff000000) >> 24,
-                (u32::from_be(addr.sin_addr.s_addr) & 0x00ff0000) >> 16,
-                (u32::from_be(addr.sin_addr.s_addr) & 0x0000ff00) >> 8,
-                (u32::from_be(addr.sin_addr.s_addr) & 0x000000ff) >> 0,
-                u16::from_be(addr.sin_port)
-            );
-            name = name.wrapping_add(1);
-        }
-    });
 }

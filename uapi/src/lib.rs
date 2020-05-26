@@ -1,5 +1,9 @@
 #![allow(deprecated)]
 
+//! Unix API crate
+//!
+//! NOTE: The crate documentation is in the `docs` module.
+
 pub use crate::{
     dir::*, errno::*, fcntl::*, fd::*, file::*, ioctl::*, mount::*, other::*, pod::*,
     poll::*, process::*, ptrace::*, result::*, signal::*, socket::*, ustr::*, util::*,
@@ -11,6 +15,7 @@ use proc::*;
 use testutils::strace;
 
 pub mod c;
+pub mod docs;
 
 #[macro_use]
 mod macros;

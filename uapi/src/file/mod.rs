@@ -14,7 +14,6 @@ cfg_if! {
 }
 
 #[man(open(2))]
-#[notest]
 pub fn open<'a>(
     path: impl IntoUstr<'a>,
     oflag: c::c_int,
@@ -26,7 +25,6 @@ pub fn open<'a>(
 }
 
 #[man(openat(2))]
-#[notest]
 pub fn openat<'a>(
     dfd: c::c_int,
     path: impl IntoUstr<'a>,
@@ -39,7 +37,6 @@ pub fn openat<'a>(
 }
 
 #[man(close(2))]
-#[notest]
 pub fn close(fd: OwnedFd) -> Result<()> {
     let fd = fd.unwrap();
     let val = unsafe { c::close(fd) };
@@ -47,14 +44,12 @@ pub fn close(fd: OwnedFd) -> Result<()> {
 }
 
 #[man(read(2))]
-#[notest]
 pub fn read(fd: c::c_int, buf: &mut [u8]) -> Result<usize> {
     let val = unsafe { c::read(fd, buf.as_mut_ptr() as *mut _, buf.len()) };
     map_err!(val).map(|v| v as usize)
 }
 
 #[man(readv(2))]
-#[notest]
 pub fn readv(fd: c::c_int, bufs: &mut [IoSliceMut<'_>]) -> Result<usize> {
     let len = i32::try_from(bufs.len()).unwrap_or(i32::max_value());
     let val = unsafe { c::readv(fd, bufs.as_mut_ptr() as *mut _, len) };
@@ -62,14 +57,12 @@ pub fn readv(fd: c::c_int, bufs: &mut [IoSliceMut<'_>]) -> Result<usize> {
 }
 
 #[man(pread(2))]
-#[notest]
 pub fn pread(fd: c::c_int, buf: &mut [u8], offset: c::off_t) -> Result<usize> {
     let val = unsafe { c::pread(fd, buf.as_mut_ptr() as *mut _, buf.len(), offset) };
     map_err!(val).map(|v| v as usize)
 }
 
 #[man(preadv(2))]
-#[notest]
 pub fn preadv(
     fd: c::c_int,
     bufs: &mut [IoSliceMut<'_>],
@@ -81,35 +74,30 @@ pub fn preadv(
 }
 
 #[man(dup(2))]
-#[notest]
 pub fn dup(old: c::c_int) -> Result<OwnedFd> {
     let res = unsafe { c::dup(old) };
     map_err!(res).map(OwnedFd::new)
 }
 
 #[man(dup2(2))]
-#[notest]
 pub fn dup2(old: c::c_int, new: c::c_int) -> Result<OwnedFd> {
     let res = unsafe { c::dup2(old, new) };
     map_err!(res).map(OwnedFd::new)
 }
 
 #[man(write(2))]
-#[notest]
 pub fn write(fd: c::c_int, buf: &[u8]) -> Result<usize> {
     let val = unsafe { c::write(fd, buf.as_ptr() as *const _, buf.len()) };
     map_err!(val).map(|v| v as usize)
 }
 
 #[man(pwrite(2))]
-#[notest]
 pub fn pwrite(fd: c::c_int, buf: &[u8], offset: c::off_t) -> Result<usize> {
     let val = unsafe { c::pwrite(fd, buf.as_ptr() as *const _, buf.len(), offset) };
     map_err!(val).map(|v| v as usize)
 }
 
 #[man(writev(2))]
-#[notest]
 pub fn writev(fd: c::c_int, bufs: &[IoSlice<'_>]) -> Result<usize> {
     let len = i32::try_from(bufs.len()).unwrap_or(i32::max_value());
     let val = unsafe { c::writev(fd, bufs.as_ptr() as *const _, len) };
@@ -117,7 +105,6 @@ pub fn writev(fd: c::c_int, bufs: &[IoSlice<'_>]) -> Result<usize> {
 }
 
 #[man(pwritev(2))]
-#[notest]
 pub fn pwritev(fd: c::c_int, bufs: &[IoSlice<'_>], offset: c::off_t) -> Result<usize> {
     let len = i32::try_from(bufs.len()).unwrap_or(i32::max_value());
     let val = unsafe { c::pwritev(fd, bufs.as_ptr() as *const _, len, offset) };
@@ -125,7 +112,6 @@ pub fn pwritev(fd: c::c_int, bufs: &[IoSlice<'_>], offset: c::off_t) -> Result<u
 }
 
 #[man(mknod(2))]
-#[notest]
 pub fn mknod<'a>(path: impl IntoUstr<'a>, mode: c::mode_t, dev: c::dev_t) -> Result<()> {
     let path = path.into_ustr();
     let val = unsafe { c::mknod(path.as_ptr(), mode, dev) };
@@ -133,7 +119,6 @@ pub fn mknod<'a>(path: impl IntoUstr<'a>, mode: c::mode_t, dev: c::dev_t) -> Res
 }
 
 #[man(mknodat(2))]
-#[notest]
 pub fn mknodat<'a>(
     fd: c::c_int,
     path: impl IntoUstr<'a>,
@@ -146,7 +131,6 @@ pub fn mknodat<'a>(
 }
 
 #[man(readlink(2))]
-#[notest]
 pub fn readlink<'a>(path: impl IntoUstr<'a>, buf: &mut [u8]) -> Result<usize> {
     let path = path.into_ustr();
     let val =
@@ -155,7 +139,6 @@ pub fn readlink<'a>(path: impl IntoUstr<'a>, buf: &mut [u8]) -> Result<usize> {
 }
 
 #[man(readlinkat(2))]
-#[notest]
 pub fn readlinkat<'a>(
     fd: c::c_int,
     path: impl IntoUstr<'a>,
@@ -169,7 +152,6 @@ pub fn readlinkat<'a>(
 }
 
 #[man(fstatat(2))]
-#[notest]
 pub fn fstatat<'a>(
     fd: c::c_int,
     path: impl IntoUstr<'a>,
@@ -182,7 +164,6 @@ pub fn fstatat<'a>(
 }
 
 #[man(fstat(2))]
-#[notest]
 pub fn fstat(fd: c::c_int) -> Result<c::stat> {
     let mut stat = MaybeUninit::uninit();
     let val = unsafe { c::fstat(fd, stat.as_mut_ptr()) };
@@ -190,7 +171,6 @@ pub fn fstat(fd: c::c_int) -> Result<c::stat> {
 }
 
 #[man(unlink(2))]
-#[notest]
 pub fn unlink<'a>(path: impl IntoUstr<'a>) -> Result<()> {
     let path = path.into_ustr();
     let val = unsafe { c::unlink(path.as_ptr()) };
@@ -198,7 +178,6 @@ pub fn unlink<'a>(path: impl IntoUstr<'a>) -> Result<()> {
 }
 
 #[man(unlinkat(2))]
-#[notest]
 pub fn unlinkat<'a>(
     dfd: c::c_int,
     path: impl IntoUstr<'a>,
@@ -209,27 +188,13 @@ pub fn unlinkat<'a>(
     map_err!(val).map(drop)
 }
 
-#[man(fallocate(2))]
-#[notest]
-pub fn fallocate(
-    fd: c::c_int,
-    mode: c::c_int,
-    offset: c::off_t,
-    len: c::off_t,
-) -> Result<()> {
-    let val = unsafe { c::fallocate(fd, mode, offset, len) };
-    map_err!(val).map(drop)
-}
-
 #[man(flock(2))]
-#[notest]
 pub fn flock(fd: c::c_int, operation: c::c_int) -> Result<()> {
     let val = unsafe { c::flock(fd, operation) };
     map_err!(val).map(drop)
 }
 
 #[man(posix_fadvise(2))]
-#[notest]
 pub fn posix_fadvise(
     fd: c::c_int,
     offset: c::off_t,
@@ -241,14 +206,12 @@ pub fn posix_fadvise(
 }
 
 #[man(posix_fallocate(3))]
-#[notest]
 pub fn posix_fallocate(fd: c::c_int, offset: c::off_t, len: c::off_t) -> Result<()> {
     let val = unsafe { c::posix_fallocate(fd, offset, len) };
     map_err!(val).map(drop)
 }
 
 #[man(rename(2))]
-#[notest]
 pub fn rename<'a, 'b>(
     oldpath: impl IntoUstr<'a>,
     newpath: impl IntoUstr<'b>,
@@ -260,7 +223,6 @@ pub fn rename<'a, 'b>(
 }
 
 #[man(renameat(2))]
-#[notest]
 pub fn renameat<'a, 'b>(
     olddirfd: c::c_int,
     oldpath: impl IntoUstr<'a>,
@@ -275,7 +237,6 @@ pub fn renameat<'a, 'b>(
 }
 
 #[man(chmod(2))]
-#[notest]
 pub fn chmod<'a>(pathname: impl IntoUstr<'a>, mode: c::mode_t) -> Result<()> {
     let pathname = pathname.into_ustr();
     let val = unsafe { c::chmod(pathname.as_ptr(), mode) };
@@ -283,14 +244,12 @@ pub fn chmod<'a>(pathname: impl IntoUstr<'a>, mode: c::mode_t) -> Result<()> {
 }
 
 #[man(fchmod(2))]
-#[notest]
 pub fn fchmod(fd: c::c_int, mode: c::mode_t) -> Result<()> {
     let val = unsafe { c::fchmod(fd, mode) };
     map_err!(val).map(drop)
 }
 
 #[man(fchmodat(2))]
-#[notest]
 pub fn fchmodat<'a>(
     dirfd: c::c_int,
     pathname: impl IntoUstr<'a>,
@@ -303,7 +262,6 @@ pub fn fchmodat<'a>(
 }
 
 #[man(stat(2))]
-#[notest]
 pub fn stat<'a>(pathname: impl IntoUstr<'a>) -> Result<c::stat> {
     let mut stat = MaybeUninit::uninit();
     let pathname = pathname.into_ustr();
@@ -312,7 +270,6 @@ pub fn stat<'a>(pathname: impl IntoUstr<'a>) -> Result<c::stat> {
 }
 
 #[man(lstat(2))]
-#[notest]
 pub fn lstat<'a>(pathname: impl IntoUstr<'a>) -> Result<c::stat> {
     let mut stat = MaybeUninit::uninit();
     let pathname = pathname.into_ustr();
@@ -321,11 +278,10 @@ pub fn lstat<'a>(pathname: impl IntoUstr<'a>) -> Result<c::stat> {
 }
 
 #[man(utimensat(2))]
-#[notest]
 pub fn utimensat<'a>(
     dirfd: c::c_int,
     pathname: impl IntoUstr<'a>,
-    times: [c::timespec; 2],
+    times: &[c::timespec; 2],
     flags: c::c_int,
 ) -> Result<()> {
     let pathname = pathname.into_ustr();
@@ -334,29 +290,25 @@ pub fn utimensat<'a>(
 }
 
 #[man(lutimes(3))]
-#[notest]
-pub fn lutimes<'a>(pathname: impl IntoUstr<'a>, times: [c::timeval; 2]) -> Result<()> {
+pub fn lutimes<'a>(pathname: impl IntoUstr<'a>, times: &[c::timeval; 2]) -> Result<()> {
     let pathname = pathname.into_ustr();
     let val = unsafe { c::lutimes(pathname.as_ptr(), times.as_ptr()) };
     map_err!(val).map(drop)
 }
 
 #[man(futimens(2))]
-#[notest]
-pub fn futimens(fd: c::c_int, times: [c::timespec; 2]) -> Result<()> {
+pub fn futimens(fd: c::c_int, times: &[c::timespec; 2]) -> Result<()> {
     let val = unsafe { c::futimens(fd, times.as_ptr()) };
     map_err!(val).map(drop)
 }
 
 #[man(futimes(3))]
-#[notest]
-pub fn futimes(fd: c::c_int, times: [c::timeval; 2]) -> Result<()> {
+pub fn futimes(fd: c::c_int, times: &[c::timeval; 2]) -> Result<()> {
     let val = unsafe { c::futimes(fd, times.as_ptr()) };
     map_err!(val).map(drop)
 }
 
 #[man(mkdir(2))]
-#[notest]
 pub fn mkdir<'a>(pathname: impl IntoUstr<'a>, mode: c::mode_t) -> Result<()> {
     let pathname = pathname.into_ustr();
     let val = unsafe { c::mkdir(pathname.as_ptr(), mode) };
@@ -364,7 +316,6 @@ pub fn mkdir<'a>(pathname: impl IntoUstr<'a>, mode: c::mode_t) -> Result<()> {
 }
 
 #[man(mkdirat(2))]
-#[notest]
 pub fn mkdirat<'a>(
     dirfd: c::c_int,
     pathname: impl IntoUstr<'a>,
@@ -376,7 +327,6 @@ pub fn mkdirat<'a>(
 }
 
 #[man(statvfs(3))]
-#[notest]
 pub fn statvfs<'a>(path: impl IntoUstr<'a>) -> Result<c::statvfs> {
     let path = path.into_ustr();
     let mut statfs = MaybeUninit::uninit();
@@ -385,7 +335,6 @@ pub fn statvfs<'a>(path: impl IntoUstr<'a>) -> Result<c::statvfs> {
 }
 
 #[man(fstatvfs(3))]
-#[notest]
 pub fn fstatvfs(fd: c::c_int) -> Result<c::statvfs> {
     let mut statfs = MaybeUninit::uninit();
     let val = unsafe { c::fstatvfs(fd, statfs.as_mut_ptr()) };
@@ -393,7 +342,6 @@ pub fn fstatvfs(fd: c::c_int) -> Result<c::statvfs> {
 }
 
 #[man(access(2))]
-#[notest]
 pub fn access<'a>(pathname: impl IntoUstr<'a>, mode: c::c_int) -> Result<()> {
     let pathname = pathname.into_ustr();
     let val = unsafe { c::access(pathname.as_ptr(), mode) };
@@ -401,7 +349,6 @@ pub fn access<'a>(pathname: impl IntoUstr<'a>, mode: c::c_int) -> Result<()> {
 }
 
 #[man(faccessat(2))]
-#[notest]
 pub fn faccessat<'a>(
     dirfd: c::c_int,
     pathname: impl IntoUstr<'a>,
@@ -414,7 +361,6 @@ pub fn faccessat<'a>(
 }
 
 #[man(chdir(2))]
-#[notest]
 pub fn chdir<'a>(path: impl IntoUstr<'a>) -> Result<()> {
     let path = path.into_ustr();
     let val = unsafe { c::chdir(path.as_ptr()) };
@@ -422,14 +368,12 @@ pub fn chdir<'a>(path: impl IntoUstr<'a>) -> Result<()> {
 }
 
 #[man(fchdir(2))]
-#[notest]
 pub fn fchdir(fd: c::c_int) -> Result<()> {
     let val = unsafe { c::fchdir(fd) };
     map_err!(val).map(drop)
 }
 
 #[man(chown(2))]
-#[notest]
 pub fn chown<'a>(
     pathname: impl IntoUstr<'a>,
     owner: c::uid_t,
@@ -441,26 +385,23 @@ pub fn chown<'a>(
 }
 
 #[man(fchown(2))]
-#[notest]
 pub fn fchown(fd: c::c_int, owner: c::uid_t, group: c::gid_t) -> Result<()> {
     let val = unsafe { c::fchown(fd, owner, group) };
     map_err!(val).map(drop)
 }
 
 #[man(lchown(2))]
-#[notest]
 pub fn lchown<'a>(
     pathname: impl IntoUstr<'a>,
     owner: c::uid_t,
     group: c::gid_t,
 ) -> Result<()> {
     let pathname = pathname.into_ustr();
-    let val = unsafe { c::chown(pathname.as_ptr(), owner, group) };
+    let val = unsafe { c::lchown(pathname.as_ptr(), owner, group) };
     map_err!(val).map(drop)
 }
 
 #[man(fchownat(2))]
-#[notest]
 pub fn fchownat<'a>(
     fd: c::c_int,
     pathname: impl IntoUstr<'a>,
@@ -474,21 +415,18 @@ pub fn fchownat<'a>(
 }
 
 #[man(fsync(2))]
-#[notest]
 pub fn fsync(fd: c::c_int) -> Result<()> {
     let val = unsafe { c::fsync(fd) };
     map_err!(val).map(drop)
 }
 
 #[man(fdatasync(2))]
-#[notest]
 pub fn fdatasync(fd: c::c_int) -> Result<()> {
     let val = unsafe { c::fdatasync(fd) };
     map_err!(val).map(drop)
 }
 
 #[man(pathconf(3))]
-#[notest]
 pub fn pathconf<'a>(path: impl IntoUstr<'a>, name: c::c_int) -> Result<c::c_long> {
     let path = path.into_ustr();
     let val = unsafe { c::pathconf(path.as_ptr(), name) };
@@ -496,14 +434,12 @@ pub fn pathconf<'a>(path: impl IntoUstr<'a>, name: c::c_int) -> Result<c::c_long
 }
 
 #[man(fpathconf(3))]
-#[notest]
 pub fn fpathconf(fd: c::c_int, name: c::c_int) -> Result<c::c_long> {
     let val = unsafe { c::fpathconf(fd, name) };
     map_err!(val)
 }
 
 #[man(truncate(2))]
-#[notest]
 pub fn truncate<'a>(path: impl IntoUstr<'a>, length: c::off_t) -> Result<()> {
     let path = path.into_ustr();
     let val = unsafe { c::truncate(path.as_ptr(), length) };
@@ -511,14 +447,12 @@ pub fn truncate<'a>(path: impl IntoUstr<'a>, length: c::off_t) -> Result<()> {
 }
 
 #[man(ftruncate(2))]
-#[notest]
 pub fn ftruncate(fd: c::c_int, length: c::off_t) -> Result<()> {
     let val = unsafe { c::ftruncate(fd, length) };
     map_err!(val).map(drop)
 }
 
 #[man(isatty(3))]
-#[notest]
 pub fn isatty(fd: c::c_int) -> Result<()> {
     let val = unsafe { c::isatty(fd) };
     if val == 1 {
@@ -529,7 +463,6 @@ pub fn isatty(fd: c::c_int) -> Result<()> {
 }
 
 #[man(link(2))]
-#[notest]
 pub fn link<'a, 'b>(
     oldpath: impl IntoUstr<'a>,
     newpath: impl IntoUstr<'a>,
@@ -541,7 +474,6 @@ pub fn link<'a, 'b>(
 }
 
 #[man(linkat(2))]
-#[notest]
 pub fn linkat<'a, 'b>(
     olddirfd: c::c_int,
     oldpath: impl IntoUstr<'a>,
@@ -564,14 +496,12 @@ pub fn linkat<'a, 'b>(
 }
 
 #[man(lseek(2))]
-#[notest]
 pub fn lseek(fd: c::c_int, offset: c::off_t, whence: c::c_int) -> Result<c::off_t> {
     let res = unsafe { c::lseek(fd, offset, whence) };
     map_err!(res)
 }
 
 #[man(mkfifo(3))]
-#[notest]
 pub fn mkfifo<'a>(pathname: impl IntoUstr<'a>, mode: c::mode_t) -> Result<()> {
     let pathname = pathname.into_ustr();
     let val = unsafe { c::mkfifo(pathname.as_ptr(), mode) };
@@ -579,7 +509,6 @@ pub fn mkfifo<'a>(pathname: impl IntoUstr<'a>, mode: c::mode_t) -> Result<()> {
 }
 
 #[man(mkfifoat(3))]
-#[notest]
 pub fn mkfifoat<'a>(
     dirfd: c::c_int,
     pathname: impl IntoUstr<'a>,
@@ -591,7 +520,6 @@ pub fn mkfifoat<'a>(
 }
 
 #[man(symlink(2))]
-#[notest]
 pub fn symlink<'a, 'b>(
     oldpath: impl IntoUstr<'a>,
     newpath: impl IntoUstr<'a>,
@@ -603,7 +531,6 @@ pub fn symlink<'a, 'b>(
 }
 
 #[man(symlinkat(2))]
-#[notest]
 pub fn symlinkat<'a, 'b>(
     oldpath: impl IntoUstr<'a>,
     newdirfd: c::c_int,

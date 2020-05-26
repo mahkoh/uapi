@@ -10,13 +10,11 @@ cfg_if! {
 }
 
 #[man(umask(2))]
-#[notest]
 pub fn umask(mask: c::mode_t) -> c::mode_t {
     unsafe { c::umask(mask) }
 }
 
 #[man(pipe(2))]
-#[notest]
 pub fn pipe() -> Result<(OwnedFd, OwnedFd)> {
     let mut buf = [0; 2];
     let res = unsafe { c::pipe(buf.as_mut_ptr()) };

@@ -1,4 +1,4 @@
-//! Re-export of the libc crate with missing items added.
+//! Re-export of the libc crate with missing items added
 //!
 //! Items should be upstreamed if possible.
 

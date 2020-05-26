@@ -3,57 +3,6 @@
 use crate::*;
 use std::ptr;
 
-#[man(wait(2))]
-#[notest]
-pub const fn WEXITSTATUS(s: c::c_int) -> c::c_int {
-    (s & 0xff00) >> 8
-}
-
-#[man(wait(2))]
-#[notest]
-pub const fn WTERMSIG(s: c::c_int) -> c::c_int {
-    s & 0x7f
-}
-
-#[man(wait(2))]
-#[notest]
-pub const fn WSTOPSIG(s: c::c_int) -> c::c_int {
-    (s & 0xff00) >> 8
-}
-
-#[man(wait(2))]
-#[notest]
-pub const fn WIFEXITED(s: c::c_int) -> bool {
-    #[allow(clippy::verbose_bit_mask)]
-    {
-        s & 0x7f == 0
-    }
-}
-
-#[man(wait(2))]
-#[notest]
-pub const fn WIFSTOPPED(s: c::c_int) -> bool {
-    s & 0xff == 0x7f
-}
-
-#[man(wait(2))]
-#[notest]
-pub fn WIFSIGNALED(s: c::c_int) -> bool {
-    (s & 0x7f != 0) && (s & 0x7f != 0x7f)
-}
-
-#[man(wait(2))]
-#[notest]
-pub const fn WIFCONTINUED(s: c::c_int) -> bool {
-    s == 0xffff
-}
-
-#[man(wait(2))]
-#[notest]
-pub const fn WCOREDUMP(s: c::c_int) -> bool {
-    s & 0x80 != 0
-}
-
 #[man(setns(2))]
 #[notest]
 pub fn setns(fd: c::c_int, nstype: c::c_int) -> Result<()> {
@@ -125,7 +74,12 @@ pub fn pivot_root<'a, 'b>(
 ) -> Result<()> {
     let new_root = new_root.into_ustr();
     let old_root = old_root.into_ustr();
-    let res =
-        unsafe { c::syscall(c::SYS_pivot_root, new_root.as_ptr(), old_root.as_ptr()) };
+    let res = unsafe {
+        c::syscall(
+            c::SYS_pivot_root,
+            new_root.as_ptr() as usize,
+            old_root.as_ptr() as usize,
+        )
+    };
     map_err!(res).map(drop)
 }
