@@ -20,3 +20,25 @@ fn test() {
     assert_eq!(data1, b"hello world");
     assert_eq!(data2, b"ayo hol up");
 }
+
+#[test]
+fn invalid() {
+    let mut hdr = pod_zeroed::<c::cmsghdr>();
+    hdr.cmsg_len = -200i16 as _;
+
+    assert_eq!(cmsg_read(&mut &[][..]).err().unwrap(), Errno(c::EINVAL));
+    assert_eq!(
+        cmsg_read(&mut as_bytes(&hdr)).err().unwrap(),
+        Errno(c::EINVAL)
+    );
+    assert_eq!(
+        cmsg_write(&mut &mut [][..], hdr, &[0u8]).err().unwrap(),
+        Errno(c::EINVAL)
+    );
+
+    hdr.cmsg_len = -1i8 as _;
+    assert_eq!(
+        cmsg_write(&mut &mut [][..], hdr, &[0u8]).err().unwrap(),
+        Errno(c::EINVAL)
+    );
+}

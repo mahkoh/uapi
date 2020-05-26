@@ -16,7 +16,7 @@ cfg_if::cfg_if! {
 ///
 /// Consider the following example:
 ///
-/// ```ignore
+/// ```rust,ignore
 /// #![feature(thread_id_value)]
 ///
 /// use std::sync::atomic::{AtomicI32, AtomicPtr};
