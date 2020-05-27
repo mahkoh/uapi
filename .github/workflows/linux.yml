@@ -16,6 +16,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - name: Install
+      run: curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
     - name: Build
       run: sudo -E cargo build --verbose
     - name: Run tests
