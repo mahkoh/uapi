@@ -14,7 +14,7 @@ fn open1() {
     };
 
     umask(0);
-    assert_eq!(f(), MODE);
+    assert_eq!(f() as c::mode_t, MODE);
     umask(0o077);
     assert_eq!(f(), 0o700);
 }
