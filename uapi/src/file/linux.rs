@@ -19,13 +19,14 @@ pub fn copy_file_range(
     flags: c::c_uint,
 ) -> Result<usize> {
     let val = unsafe {
-        c::copy_file_range(
-            fd_in,
-            off_in.map(|p| p as *mut _).unwrap_or(ptr::null_mut()),
-            fd_out,
-            off_out.map(|p| p as *mut _).unwrap_or(ptr::null_mut()),
-            len,
-            flags,
+        c::syscall(
+            c::SYS_copy_file_range,
+            fd_in as usize,
+            off_in.map(|p| p as *mut _).unwrap_or(ptr::null_mut()) as usize,
+            fd_out as usize,
+            off_out.map(|p| p as *mut _).unwrap_or(ptr::null_mut()) as usize,
+            len as usize,
+            flags as usize,
         )
     };
     map_err!(val).map(|v| v as _)
