@@ -2,6 +2,7 @@
 **/*.rs.bk
 .*
 !.gitignore
+!.github
 Cargo.lock
 /coverage
 strace

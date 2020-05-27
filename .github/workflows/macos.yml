@@ -1,0 +1,28 @@
+name: macos
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  latest:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Show env
+      run: |
+        uname -a
+        ldd --version
+    - name: Install
+      run: |
+        curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain stable
+        echo "::add-path::$HOME/.cargo/bin"
+    - name: Build
+      run: sudo -E $HOME/.cargo/bin/cargo build --verbose
+    - name: Run tests
+      run: sudo -E $HOME/.cargo/bin/cargo test --verbose
