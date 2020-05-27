@@ -1,4 +1,4 @@
-#![allow(non_upper_case_globals)]
+#![allow(non_upper_case_globals, non_camel_case_types)]
 #![allow(clippy::unreadable_literal, clippy::missing_safety_doc)]
 
 use crate::{c, c::*};
@@ -140,3 +140,11 @@ pub const RWF_DSYNC: c::c_int = 0x00000002;
 pub const RWF_SYNC: c::c_int = 0x00000004;
 pub const RWF_NOWAIT: c::c_int = 0x00000008;
 pub const RWF_APPEND: c::c_int = 0x00000010;
+
+#[cfg(target_env = "musl")]
+#[derive(Copy, Clone)]
+pub struct ip_mreqn {
+    pub imr_multiaddr: c::in_addr,
+    pub imr_address: c::in_addr,
+    pub imr_ifindex: c::c_int,
+}

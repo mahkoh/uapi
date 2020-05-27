@@ -1,5 +1,6 @@
 use crate::*;
 use std::{convert::TryFrom, mem};
+use std::convert::TryInto;
 
 #[cfg(target_os = "linux")]
 const ALIGN: usize = mem::size_of::<usize>() - 1;
@@ -98,7 +99,10 @@ pub fn cmsg_write<T: ?Sized>(
     if buf.len() < cmsg_space {
         return einval();
     }
-    hdr.cmsg_len = align(HDR_SIZE) + data_size;
+    hdr.cmsg_len = match (align(HDR_SIZE) + data_size).try_into() {
+        Ok(v) => v,
+        Err(_) => return einval(),
+    };
     let ptr = buf.as_mut_ptr();
     unsafe {
         ptr.copy_from_nonoverlapping(&hdr as *const _ as *const _, HDR_SIZE);

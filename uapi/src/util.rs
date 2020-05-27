@@ -66,3 +66,34 @@ pub(crate) fn black_box<T: ?Sized>(ptr: *const T) {
 pub(crate) const fn einval<T>() -> Result<T> {
     Err(Errno(c::EINVAL))
 }
+
+pub(crate) trait MaxValue {
+    fn max_value() -> Self;
+}
+
+macro_rules! imv {
+    ($t:ty) => {
+        impl MaxValue for $t {
+            fn max_value() -> Self {
+                <$t>::max_value()
+            }
+        }
+    }
+}
+
+imv!(i8);
+imv!(i16);
+imv!(i32);
+imv!(i64);
+imv!(i128);
+imv!(isize);
+imv!(u8);
+imv!(u16);
+imv!(u32);
+imv!(u64);
+imv!(u128);
+imv!(usize);
+
+pub(crate) fn max_value<T: MaxValue>() -> T {
+    T::max_value()
+}
