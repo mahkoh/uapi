@@ -1,16 +1,14 @@
 use crate::*;
-use std::{
-    borrow::{Cow},
-    iter::FromIterator,
-    ptr,
-};
+use std::{borrow::Cow, iter::FromIterator, ptr};
 
+/// Wrapper for a `*const *const libc::c_char` with a terminating null pointer
 pub struct UstrPtr<'a> {
     ustrs: Vec<Cow<'a, Ustr>>,
     ptrs: Vec<*const c::c_char>,
 }
 
 impl<'a> UstrPtr<'a> {
+    /// Creates a new `UstrPtr`
     pub fn new() -> Self {
         Self {
             ustrs: vec![],
@@ -18,6 +16,7 @@ impl<'a> UstrPtr<'a> {
         }
     }
 
+    /// Appends a `*const libc::c_char`
     pub fn push(&mut self, s: impl IntoUstr<'a>) {
         let s = s.into_ustr();
         self.ustrs.reserve_exact(1);
@@ -28,8 +27,9 @@ impl<'a> UstrPtr<'a> {
         self.ustrs.push(s);
     }
 
-    pub fn as_ptr(&self) -> *const *const c::c_char {
-        self.ptrs.as_ptr()
+    /// Returns the `*const *const c::c_char`
+    pub fn as_ptr(&self) -> &*const c::c_char {
+        &self.ptrs[0]
     }
 }
 
@@ -46,5 +46,11 @@ impl<'a, T: IntoUstr<'a>> FromIterator<T> for UstrPtr<'a> {
         let mut buf = UstrPtr::new();
         buf.extend(iter);
         buf
+    }
+}
+
+impl<'a> Default for UstrPtr<'a> {
+    fn default() -> Self {
+        UstrPtr::new()
     }
 }

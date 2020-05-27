@@ -1,13 +1,14 @@
 use std::process::exit;
+use testutils::*;
 use uapi::*;
 
 #[test]
 fn process6() {
     match unsafe { fork().unwrap() } {
-        0 => {
+        0 => in_fork(|| {
             raise(c::SIGILL).unwrap();
             exit(1);
-        }
+        }),
         n => {
             let (pid, status) = wait().unwrap();
             assert_eq!(pid, n);

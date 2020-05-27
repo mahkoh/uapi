@@ -10,7 +10,6 @@ use std::{
 };
 
 #[man(copy_file_range(2))]
-#[notest]
 pub fn copy_file_range(
     fd_in: c::c_int,
     off_in: Option<&mut c::loff_t>,
@@ -33,7 +32,6 @@ pub fn copy_file_range(
 }
 
 #[man(renameat2(2))]
-#[notest]
 pub fn renameat2<'a, 'b>(
     olddirfd: c::c_int,
     oldpath: impl IntoUstr<'a>,
@@ -56,7 +54,6 @@ pub fn renameat2<'a, 'b>(
 }
 
 #[man(splice(2))]
-#[notest]
 pub fn splice(
     fd_in: c::c_int,
     off_in: Option<&mut c::loff_t>,
@@ -79,7 +76,6 @@ pub fn splice(
 }
 
 #[man(tee(2))]
-#[notest]
 pub fn tee(
     fd_in: c::c_int,
     fd_out: c::c_int,
@@ -90,23 +86,13 @@ pub fn tee(
     map_err!(val).map(|v| v as _)
 }
 
-#[man(vmsplice(2))]
-#[notest]
-// #[beta]
-pub unsafe fn vmsplice(fd: c::c_int, iov: &[IoSlice], flags: c::c_uint) -> Result<usize> {
-    let val = c::vmsplice(fd, iov.as_ptr() as *const _, iov.len() as _, flags);
-    map_err!(val).map(|v| v as _)
-}
-
 #[man(inotify_init1(2))]
-#[notest]
 pub fn inotify_init1(flags: c::c_int) -> Result<OwnedFd> {
     let val = unsafe { c::inotify_init1(flags) };
     map_err!(val).map(OwnedFd::new)
 }
 
 #[man(inotify_add_watch(2))]
-#[notest]
 pub fn inotify_add_watch<'a>(
     fd: c::c_int,
     pathname: impl IntoUstr<'a>,
@@ -118,14 +104,12 @@ pub fn inotify_add_watch<'a>(
 }
 
 #[man(inotify_rm_watch(2))]
-#[notest]
 pub fn inotify_rm_watch(fd: c::c_int, wd: c::c_int) -> Result<()> {
     let val = unsafe { c::inotify_rm_watch(fd, wd) };
     map_err!(val).map(drop)
 }
 
 /// Reads from an inotify file descriptor and returns an iterator over the results
-#[notest]
 pub fn inotify_read(
     fd: c::c_int,
     buf: &mut [u8],
@@ -210,7 +194,6 @@ impl Deref for InotifyEvent<'_> {
 }
 
 #[man(sendfile(2))]
-#[notest]
 pub fn sendfile(
     out_fd: c::c_int,
     in_fd: c::c_int,
@@ -229,13 +212,11 @@ pub fn sendfile(
 }
 
 #[man(major(3))]
-#[notest]
 pub const fn major(dev: c::dev_t) -> u64 {
     ((dev >> 32) & 0xffff_f000) | ((dev >> 8) & 0xfff)
 }
 
 #[man(minor(3))]
-#[notest]
 pub const fn minor(dev: c::dev_t) -> u64 {
     ((dev >> 12) & 0xffff_ff00) | (dev & 0xff)
 }
@@ -249,7 +230,6 @@ pub const fn makedev(major: u64, minor: u64) -> c::dev_t {
 }
 
 #[man(statfs(2))]
-#[notest]
 pub fn statfs<'a>(path: impl IntoUstr<'a>) -> Result<c::statfs> {
     let path = path.into_ustr();
     let mut statfs = MaybeUninit::uninit();
@@ -258,7 +238,6 @@ pub fn statfs<'a>(path: impl IntoUstr<'a>) -> Result<c::statfs> {
 }
 
 #[man(fstatfs(2))]
-#[notest]
 pub fn fstatfs(fd: c::c_int) -> Result<c::statfs> {
     let mut statfs = MaybeUninit::uninit();
     let val = unsafe { c::fstatfs(fd, statfs.as_mut_ptr()) };
@@ -266,7 +245,6 @@ pub fn fstatfs(fd: c::c_int) -> Result<c::statfs> {
 }
 
 #[man(preadv2(2))]
-#[notest]
 pub fn preadv2(
     fd: c::c_int,
     bufs: &mut [IoSliceMut<'_>],
@@ -289,7 +267,6 @@ pub fn preadv2(
 }
 
 #[man(pwritev2(2))]
-#[notest]
 pub fn pwritev2(
     fd: c::c_int,
     bufs: &[IoSlice<'_>],
@@ -312,14 +289,12 @@ pub fn pwritev2(
 }
 
 #[man(dup3(2))]
-#[notest]
-pub fn dup3(old: c::c_int, new: c::c_int, flags: c::c_int) -> Result<OwnedFd> {
+pub fn dup3(old: c::c_int, new: c::c_int, flags: c::c_int) -> Result<c::c_int> {
     let res = unsafe { c::dup3(old, new, flags) };
-    map_err!(res).map(OwnedFd::new)
+    map_err!(res)
 }
 
 #[man(fallocate(2))]
-#[notest]
 pub fn fallocate(
     fd: c::c_int,
     mode: c::c_int,

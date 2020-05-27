@@ -1,7 +1,6 @@
 use crate::*;
 
-#[man("readlinkat(2)s (`fd`, `path`) and appends the result to `buf`")]
-#[notest]
+#[man("Uses readlinkat(2) on (`fd`, `path`) and appends the result to `buf`")]
 pub fn read_link_to_ustring<'a>(
     fd: c::c_int,
     path: impl IntoUstr<'a>,
@@ -37,7 +36,6 @@ pub fn read_link_to_ustring<'a>(
 }
 
 /// Shortcut for `read_link_to_ustring` with a new `Ustring`
-#[notest]
 pub fn read_link_to_new_ustring<'a>(
     fd: c::c_int,
     path: impl IntoUstr<'a>,

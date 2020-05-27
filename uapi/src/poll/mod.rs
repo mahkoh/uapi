@@ -9,8 +9,7 @@ cfg_if! {
 }
 
 #[man(poll(2))]
-#[notest]
-pub fn poll(fds: &mut [c::pollfd], timeout: c::c_int) -> Result<c::c_int> {
+pub fn poll(fds: &mut [c::pollfd], timeout: c::c_int) -> Result<usize> {
     let res = unsafe { c::poll(fds.as_mut_ptr(), fds.len() as _, timeout) };
-    map_err!(res)
+    map_err!(res).map(|r| r as usize)
 }

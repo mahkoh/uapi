@@ -1,14 +1,12 @@
 use crate::*;
 
 #[man(setns(2))]
-#[notest]
 pub fn setns(fd: c::c_int, nstype: c::c_int) -> Result<()> {
     let res = unsafe { c::setns(fd, nstype) };
     map_err!(res).map(drop)
 }
 
 #[man(unshare(2))]
-#[notest]
 pub fn unshare(flags: c::c_int) -> Result<()> {
     let res = unsafe { c::unshare(flags) };
     map_err!(res).map(drop)
@@ -48,13 +46,11 @@ pub fn execvpe<'a, 'b, 'c>(
 }
 
 #[man(gettid(2))]
-#[notest]
 pub fn gettid() -> c::pid_t {
     unsafe { c::syscall(c::SYS_gettid) as _ }
 }
 
 #[man(pivot_root(2))]
-#[notest]
 pub fn pivot_root<'a, 'b>(
     new_root: impl IntoUstr<'a>,
     old_root: impl IntoUstr<'a>,

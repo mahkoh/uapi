@@ -56,7 +56,7 @@ impl<'a, T: Pod> Iterator for Iter<'a, T> {
     type Item = T;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.buf.len() == 0 {
+        if self.buf.is_empty() {
             None
         } else {
             let t = pod_read_init(self.buf).unwrap();
@@ -144,6 +144,13 @@ imp_pod! {
     c::ucred
     c::in_pktinfo
     c::in6_pktinfo
+
+    c::sigset_t
+    c::signalfd_siginfo
+    c::siginfo_t
+    c::flock
+    c::timespec
+    c::timeval
 }
 
 /// Marker trait for types without padding

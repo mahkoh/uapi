@@ -213,7 +213,6 @@ pub fn getsid(pid: c::pid_t) -> c::pid_t {
 }
 
 #[man(pause(2))]
-#[notest]
 pub fn pause() {
     unsafe {
         c::pause();
@@ -247,28 +246,24 @@ pub fn getresgid() -> Result<(c::gid_t, c::gid_t, c::gid_t)> {
 }
 
 #[man(clock_getres(2))]
-#[notest]
 pub fn clock_getres(clockid: c::clockid_t, tp: &mut c::timespec) -> Result<()> {
     let res = unsafe { c::clock_getres(clockid, tp) };
     map_err!(res).map(drop)
 }
 
 #[man(clock_gettime(2))]
-#[notest]
 pub fn clock_gettime(clockid: c::clockid_t, tp: &mut c::timespec) -> Result<()> {
     let res = unsafe { c::clock_gettime(clockid, tp) };
     map_err!(res).map(drop)
 }
 
 #[man(clock_settime(2))]
-#[notest]
 pub fn clock_settime(clockid: c::clockid_t, tp: &c::timespec) -> Result<()> {
     let res = unsafe { c::clock_settime(clockid, tp) };
     map_err!(res).map(drop)
 }
 
 #[man(clock_nanosleep(2))]
-#[notest]
 pub fn clock_nanosleep(
     clockid: c::clockid_t,
     flags: c::c_int,

@@ -70,10 +70,10 @@ fn read_write() {
 
     assert_eq!(close(OwnedFd::new(-1)), Err(Errno(c::EBADF)));
 
-    let fd3 = dup(*fd).unwrap().unwrap();
-    assert_eq!(fstat(fd3).unwrap().st_ino, xstat.st_ino);
+    let fd3 = dup(*fd).unwrap();
+    assert_eq!(fstat(*fd3).unwrap().st_ino, xstat.st_ino);
     assert_eq!(
-        fstat(*dup2(*fd, fd3).unwrap()).unwrap().st_ino,
+        fstat(dup2(*fd, *fd3).unwrap()).unwrap().st_ino,
         xstat.st_ino
     );
 

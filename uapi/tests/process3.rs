@@ -1,10 +1,11 @@
 use std::process::exit;
+use testutils::*;
 use uapi::*;
 
 #[test]
 fn process3() {
     match unsafe { fork().unwrap() } {
-        0 => exit(1),
+        0 => in_fork(|| exit(1)),
         _ => {
             let (_, status) = wait().unwrap();
             assert_eq!(WIFEXITED(status), true);

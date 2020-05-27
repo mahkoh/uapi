@@ -62,7 +62,6 @@ impl Deref for UtsName {
 }
 
 #[man(uname(2))]
-#[notest]
 pub fn uname() -> Result<UtsName> {
     let mut uname = MaybeUninit::uninit();
     let res = unsafe { c::uname(uname.as_mut_ptr()) };
@@ -72,7 +71,6 @@ pub fn uname() -> Result<UtsName> {
 }
 
 #[man(daemon(3))]
-#[notest]
 pub fn daemon(nochdir: bool, noclose: bool) -> Result<()> {
     let res = unsafe { c::daemon(nochdir as _, noclose as _) };
     map_err!(res).map(drop)
@@ -128,9 +126,7 @@ pub fn sync() {
     unsafe { libc::sync() }
 }
 
-#[man(sysconf(2))]
-// #[beta]
-#[notest]
+#[man(sysconf(3))]
 pub fn sysconf(name: c::c_int) -> Result<c::c_long> {
     set_errno(0);
     let res = unsafe { c::sysconf(name) };

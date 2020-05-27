@@ -2,6 +2,33 @@ use proc::*;
 use std::{ffi::CStr, fs, os::raw::c_int, path::Path};
 use tempfile::{tempdir, tempdir_in};
 use uapi::*;
+use testutils::Tempdir;
+use std::io::{BufReader, BufRead};
+use std::fs::File;
+
+#[test_if_root]
+fn mount_() {
+    let tmp = Tempdir::new();
+    let path = format!("{}", tmp.bstr().display());
+
+    mount("dummy", tmp.bstr(), "tmpfs", 0, None).unwrap();
+
+    for line in BufReader::new(File::open("/proc/self/mountinfo").unwrap()).lines() {
+        let line = line.unwrap();
+        if line.contains(&path) {
+            let fields: Vec<_> = line.split(' ').collect();
+            assert_eq!(fields[3], "/");
+            assert_eq!(fields[4], path);
+            assert_eq!(fields[8], "tmpfs");
+        }
+    }
+
+    let _fd = open(format!("{}/a", tmp), c::O_CREAT | c::O_RDONLY, 0).unwrap();
+
+    assert!(umount2(tmp.bstr(), 0).is_err());
+
+    assert!(umount2(tmp.bstr(), c::MNT_DETACH).is_ok());
+}
 
 fn tmpfs() -> OwnedFd {
     let fs = fsopen(ustr!("tmpfs"), 0).unwrap();

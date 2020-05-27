@@ -1,3 +1,4 @@
+use testutils::*;
 use uapi::*;
 
 fn check_exit(n: c::pid_t, code: c::c_int) {
@@ -14,7 +15,7 @@ fn sh() -> UstrPtr<'static> {
 #[test]
 fn exec1() {
     match unsafe { fork().unwrap() } {
-        0 => {
+        0 => in_fork(|| {
             let mut buf = sh();
             buf.push("exit $a");
 
@@ -22,36 +23,36 @@ fn exec1() {
             env.push("a=55");
 
             execve("/bin/sh", &buf, &env).unwrap();
-        }
+        }),
         n => check_exit(n, 55),
     }
 
     std::env::set_var("a", "99");
 
     match unsafe { fork().unwrap() } {
-        0 => {
+        0 => in_fork(|| {
             let mut buf = sh();
             buf.push("exit $a");
 
             execv("/bin/sh", &buf).unwrap();
-        }
+        }),
         n => check_exit(n, 99),
     }
 
     std::env::set_var("a", "68");
 
     match unsafe { fork().unwrap() } {
-        0 => {
+        0 => in_fork(|| {
             let mut buf = sh();
             buf.push("exit $a");
 
             execvp("sh", &buf).unwrap();
-        }
+        }),
         n => check_exit(n, 68),
     }
 
     match unsafe { fork().unwrap() } {
-        0 => {
+        0 => in_fork(|| {
             let mut buf = sh();
             buf.push("exit 22");
 
@@ -59,8 +60,9 @@ fn exec1() {
                 *open("/bin/sh", c::O_RDONLY, 0).unwrap(),
                 &buf,
                 &UstrPtr::new(),
-            ).unwrap();
-        }
+            )
+            .unwrap();
+        }),
         n => check_exit(n, 22),
     }
 }

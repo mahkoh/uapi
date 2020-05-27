@@ -1,4 +1,4 @@
-use std::{panic::AssertUnwindSafe};
+use std::panic::AssertUnwindSafe;
 use uapi::*;
 
 pub fn strace<T, F: FnOnce() -> T>(trace: bool, f: F) -> T {

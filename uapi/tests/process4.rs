@@ -1,12 +1,13 @@
+use testutils::*;
 use uapi::*;
 
 #[test]
 fn process4() {
     match unsafe { fork().unwrap() } {
-        0 => {
+        0 => in_fork(|| {
             raise(c::SIGINT).unwrap();
             unreachable!();
-        }
+        }),
         _ => {
             let (_, status) = wait().unwrap();
             assert_eq!(WIFEXITED(status), false);

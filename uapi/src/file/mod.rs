@@ -80,9 +80,9 @@ pub fn dup(old: c::c_int) -> Result<OwnedFd> {
 }
 
 #[man(dup2(2))]
-pub fn dup2(old: c::c_int, new: c::c_int) -> Result<OwnedFd> {
+pub fn dup2(old: c::c_int, new: c::c_int) -> Result<c::c_int> {
     let res = unsafe { c::dup2(old, new) };
-    map_err!(res).map(OwnedFd::new)
+    map_err!(res)
 }
 
 #[man(write(2))]

@@ -1,3 +1,4 @@
+use testutils::*;
 use uapi::*;
 
 fn check_exit(n: c::pid_t, code: c::c_int) {
@@ -15,20 +16,21 @@ fn sh() -> UstrPtr<'static> {
 #[cfg(target_os = "linux")]
 fn exec2() {
     match unsafe { fork().unwrap() } {
-        0 => {
+        0 => in_fork(|| {
             let mut buf = sh();
             buf.push("exit $a");
 
             let mut env = UstrPtr::new();
             env.push("a=55");
 
-            execveat(*open("/bin", c::O_RDONLY, 0).unwrap(), "sh", &buf, &env, 0).unwrap();
-        }
+            execveat(*open("/bin", c::O_RDONLY, 0).unwrap(), "sh", &buf, &env, 0)
+                .unwrap();
+        }),
         n => check_exit(n, 55),
     }
 
     match unsafe { fork().unwrap() } {
-        0 => {
+        0 => in_fork(|| {
             let mut buf = sh();
             buf.push("exit $a");
 
@@ -41,12 +43,13 @@ fn exec2() {
                 &buf,
                 &env,
                 c::AT_EMPTY_PATH,
-            ).unwrap();
-        }
+            )
+            .unwrap();
+        }),
         n => check_exit(n, 56),
     }
     match unsafe { fork().unwrap() } {
-        0 => {
+        0 => in_fork(|| {
             let mut buf = sh();
             buf.push("exit $a");
 
@@ -54,7 +57,7 @@ fn exec2() {
             env.push("a=57");
 
             execvpe("sh", &buf, &env).unwrap();
-        }
+        }),
         n => check_exit(n, 57),
     }
 }
