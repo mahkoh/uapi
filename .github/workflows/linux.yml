@@ -55,6 +55,7 @@ jobs:
           curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain stable
           . $HOME/.cargo/env
           rustup target add x86_64-unknown-linux-musl
+          apt-get install musl
           echo "::add-path::$HOME/.cargo/bin"
       - name: Build
         run: sudo -E $HOME/.cargo/bin/cargo build --verbose --target x86_64-unknown-linux-musl
