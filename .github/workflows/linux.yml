@@ -20,7 +20,9 @@ jobs:
       run: curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain stable --profile=minimal
     - name: Build
       run: |
+        set -x
         . $HOME/.cargo/env
+        env
         sudo -E cargo build --verbose
     - name: Run tests
       run: |
