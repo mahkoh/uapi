@@ -151,6 +151,9 @@ imp_pod! {
     c::flock
     c::timespec
     c::timeval
+
+    OwnedFd
+    Fd
 }
 
 /// Marker trait for types without padding
@@ -182,6 +185,9 @@ imp_packed! {
     i64
     i128
     isize
+
+    OwnedFd
+    Fd
 }
 
 /// Returns the object representation of `t`

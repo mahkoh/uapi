@@ -16,11 +16,7 @@ pub fn mount<'a, 'b, 'c, 'd>(
         c::mount(
             src.as_ptr(),
             target.as_ptr(),
-            if fstype.is_null() {
-                ptr::null()
-            } else {
-                fstype.as_ptr()
-            },
+            fstype.as_ptr_null(),
             flags,
             data.map(|d| d.as_ptr() as *const _).unwrap_or(ptr::null()),
         )

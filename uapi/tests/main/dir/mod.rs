@@ -50,7 +50,7 @@ fn next(dir: &mut Dir) -> Ustring {
 fn seekdir1() {
     let tmp = Tempdir::new();
 
-    let mut dir = opendir(&tmp).unwrap();
+    let mut dir = unsafe { Dir::from_ptr(opendir(&tmp).unwrap().unwrap()) };
 
     let pos = telldir(&mut dir);
 

@@ -24,6 +24,7 @@ use std::{
 ///
 /// This struct can be converted `From` and `Into` various `std` types.
 #[derive(Debug, Eq, PartialEq)]
+#[repr(transparent)]
 pub struct OwnedFd {
     raw: c_int,
 }
@@ -114,6 +115,7 @@ from!(ChildStdout);
 ///
 /// This struct implements `Read` and `Write`.
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
+#[repr(transparent)]
 pub struct Fd {
     raw: c_int,
 }
@@ -171,3 +173,15 @@ macro_rules! impl_io {
 
 impl_io!(Fd);
 impl_io!(OwnedFd);
+
+impl PartialEq<Fd> for OwnedFd {
+    fn eq(&self, other: &Fd) -> bool {
+        self.raw == other.raw
+    }
+}
+
+impl PartialEq<OwnedFd> for Fd {
+    fn eq(&self, other: &OwnedFd) -> bool {
+        self.raw == other.raw
+    }
+}

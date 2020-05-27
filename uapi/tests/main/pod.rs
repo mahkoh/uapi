@@ -5,6 +5,11 @@ fn pod_read_() {
     let buf = [1u8, 0, 0, 0];
     let i: i32 = pod_read(&buf[..]).unwrap();
     assert_eq!(i.to_le(), 1);
+
+    assert_eq!(
+        pod_read::<i32, _>(&[0u8][..]).err().unwrap(),
+        Errno(c::EINVAL)
+    );
 }
 
 #[test]
@@ -12,6 +17,11 @@ fn pod_read_init_() {
     let buf = [3u8, 0, 0, 0, 0, 0];
     let i: i32 = pod_read_init(&buf[..]).unwrap();
     assert_eq!(i.to_le(), 3);
+
+    assert_eq!(
+        pod_read_init::<i32, _>(&[0u8][..]).err().unwrap(),
+        Errno(c::EINVAL)
+    );
 }
 
 #[test]
@@ -20,6 +30,11 @@ fn pod_write_() {
     let mut i: i32 = 0;
     pod_write(&buf[..], &mut i).unwrap();
     assert_eq!(i.to_le(), 1);
+
+    assert_eq!(
+        pod_write(&[0u8][..], &mut i).err().unwrap(),
+        Errno(c::EINVAL)
+    );
 }
 
 #[test]
@@ -31,6 +46,11 @@ fn pod_iter_() {
             .map(|v| v.to_le())
             .collect::<Vec<_>>(),
         [1, 2, 3]
+    );
+
+    assert_eq!(
+        pod_iter::<i32, _>(&[0u8][..]).err().unwrap(),
+        Errno(c::EINVAL)
     );
 }
 
