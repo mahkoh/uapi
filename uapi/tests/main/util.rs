@@ -9,13 +9,13 @@ fn read_link() {
     let path2 = &*format!("{}/b", tmp);
 
     let mut link = "x".to_string();
-    for _ in 0..12 {
+    for _ in 0..5 {
         link.push_str(&link.clone());
     }
     link.pop();
 
     symlink(&*link, path).unwrap();
-    mknod(path2, c::S_IFREG, 0).unwrap();
+    open(path2, c::O_CREAT | c::O_RDONLY, 0).unwrap();
 
     assert_eq!(&read_link_to_new_ustring(c::AT_FDCWD, path).unwrap(), &link);
     assert_eq!(

@@ -94,6 +94,7 @@ fn linger() {
 }
 
 #[test]
+#[cfg(not(target_os = "macos"))] // todo
 fn acceptconn() {
     let socket = socket(c::AF_INET, c::SOCK_STREAM, 0).unwrap();
 
@@ -115,6 +116,7 @@ fn membership() {
 }
 
 #[test]
+#[cfg(target_os = "linux")]
 fn rcvbuf() {
     let socket = socket(c::AF_INET, c::SOCK_STREAM, 0).unwrap();
 
@@ -128,6 +130,24 @@ fn rcvbuf() {
     setsockopt_so_sndbuf(*socket, buf / 2 + 1).unwrap();
     assert_eq!(getsockopt_so_sndbuf(*socket).unwrap(), buf + 2);
     setsockopt_so_sndbuf(*socket, buf / 2).unwrap();
+    assert_eq!(getsockopt_so_sndbuf(*socket).unwrap(), buf);
+}
+
+#[test]
+#[cfg(not(target_os = "linux"))]
+fn rcvbuf() {
+    let socket = socket(c::AF_INET, c::SOCK_STREAM, 0).unwrap();
+
+    let buf = getsockopt_so_rcvbuf(*socket).unwrap();
+    setsockopt_so_rcvbuf(*socket, buf + 1).unwrap();
+    assert_eq!(getsockopt_so_rcvbuf(*socket).unwrap(), buf + 1);
+    setsockopt_so_rcvbuf(*socket, buf).unwrap();
+    assert_eq!(getsockopt_so_rcvbuf(*socket).unwrap(), buf);
+
+    let buf = getsockopt_so_sndbuf(*socket).unwrap();
+    setsockopt_so_sndbuf(*socket, buf + 1).unwrap();
+    assert_eq!(getsockopt_so_sndbuf(*socket).unwrap(), buf + 1);
+    setsockopt_so_sndbuf(*socket, buf).unwrap();
     assert_eq!(getsockopt_so_sndbuf(*socket).unwrap(), buf);
 }
 

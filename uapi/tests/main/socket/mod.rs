@@ -44,11 +44,6 @@ fn socket1() {
         bind(*client, &client_addr).unwrap();
         connect(*client, &server_addr).unwrap();
 
-        send(*client, b"hello world", 0).unwrap();
-        shutdown(*client, c::SHUT_WR).unwrap();
-
-        assert_eq!(&client.read_to_new_ustring().unwrap(), "hol up");
-
         let mut pa: c::sockaddr_un = pod_zeroed();
         getpeername(*client, &mut pa).unwrap();
         cmp_addr_un(&pa, &server_addr);
@@ -56,6 +51,11 @@ fn socket1() {
         let mut sa: c::sockaddr_un = pod_zeroed();
         getsockname(*client, &mut sa).unwrap();
         cmp_addr_un(&sa, &client_addr);
+
+        send(*client, b"hello world", 0).unwrap();
+        shutdown(*client, c::SHUT_WR).unwrap();
+
+        assert_eq!(&client.read_to_new_ustring().unwrap(), "hol up");
     });
 
     let mut accepted_client_addr: c::sockaddr_un = pod_zeroed();
