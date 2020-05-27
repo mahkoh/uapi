@@ -16,7 +16,7 @@ fn chdir1() {
 
     assert_eq!(old.as_ustr(), &*std::env::current_dir().unwrap());
 
-    fchdir(*open(&tmp, c::O_PATH, 0).unwrap()).unwrap();
+    fchdir(*open(&tmp, c::O_RDONLY, 0).unwrap()).unwrap();
 
     assert_eq!(tmp.bstr(), &*std::env::current_dir().unwrap());
 }
