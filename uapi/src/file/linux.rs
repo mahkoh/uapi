@@ -42,12 +42,13 @@ pub fn renameat2<'a, 'b>(
     let oldpath = oldpath.into_ustr();
     let newpath = newpath.into_ustr();
     let val = unsafe {
-        c::renameat2(
-            olddirfd,
-            oldpath.as_ptr(),
-            newdirfd,
-            newpath.as_ptr(),
-            flags,
+        c::syscall(
+            c::SYS_renameat2,
+            olddirfd as usize,
+            oldpath.as_ptr() as usize,
+            newdirfd as usize,
+            newpath.as_ptr() as usize,
+            flags as usize,
         )
     };
     map_err!(val).map(drop)

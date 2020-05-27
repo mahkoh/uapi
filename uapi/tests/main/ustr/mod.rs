@@ -124,7 +124,7 @@ fn ustr() {
     assert!(Ustr::null().as_ptr_null().is_null());
     assert_eq!(ustr!("abc").to_owned(), format!("abc"));
 
-    let mut buf = &mut [b'a', b'b', b'c', 0][..];
+    let buf = &mut [b'a', b'b', b'c', 0][..];
     assert_eq!(
         am::<[u8], _>(Ustr::from_bytes_mut(buf).unwrap()),
         ustr!("abc")
