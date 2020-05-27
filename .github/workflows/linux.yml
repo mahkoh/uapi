@@ -17,11 +17,12 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Install
-      run: curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain stable --profile=minimal
+      run: curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain stable
     - name: Build
       run: |
         set -x
         . $HOME/.cargo/env
+        ls $HOME/.cargo/bin
         env
         sudo -E cargo build --verbose
     - name: Run tests
