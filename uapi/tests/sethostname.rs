@@ -2,7 +2,7 @@ use proc::*;
 use uapi::*;
 
 #[cfg(target_os = "linux")]
-#[test_if_root]
+#[test_if(root)]
 fn sethostname1() {
     unshare(c::CLONE_NEWUTS).unwrap();
     let name = b"hello world";

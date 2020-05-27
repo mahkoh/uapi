@@ -6,7 +6,7 @@ use testutils::Tempdir;
 use std::io::{BufReader, BufRead};
 use std::fs::File;
 
-#[test_if_root]
+#[test_if(root)]
 fn mount_() {
     let tmp = Tempdir::new();
     let path = format!("{}", tmp.bstr().display());
@@ -77,7 +77,7 @@ fn create_file<'a>(dfd: c_int, p: impl IntoUstr<'a>) {
     openat(dfd, p, c::O_CREAT | c::O_RDONLY, 0).unwrap();
 }
 
-#[test_if_root]
+#[test_if(root, linux_5_2)]
 fn move_mount1() {
     with_private_mount(|path| {
         with_mount_point(path, |p1| {
@@ -145,7 +145,7 @@ fn move_mount1() {
     });
 }
 
-#[test_if_root]
+#[test_if(root, linux_5_2)]
 fn fspick1() {
     with_mount_point(None, |p1| {
         let mnt = tmpfs();
@@ -169,7 +169,7 @@ fn fspick1() {
     });
 }
 
-#[test_if_root]
+#[test_if(root, linux_5_2)]
 fn fsmount1() {
     let fs = fsopen("proc", 0).unwrap();
     fsconfig_cmd_create(*fs).unwrap();

@@ -1,11 +1,11 @@
 use std::{
     fs::File,
+    io::{IoSlice, IoSliceMut, Read, Write},
     net::{TcpListener, TcpStream, UdpSocket},
     os::unix::net::{UnixDatagram, UnixListener, UnixStream},
     process::{Command, Stdio},
 };
 use uapi::*;
-use std::io::{Write, IoSlice, Read, IoSliceMut};
 
 #[test]
 fn fd() {
@@ -60,7 +60,9 @@ fn fd() {
         .spawn()
         .unwrap();
 
-    OwnedFd::from(child.stdin.take().unwrap()).write_all(b"x").unwrap();
+    OwnedFd::from(child.stdin.take().unwrap())
+        .write_all(b"x")
+        .unwrap();
     let mut r = OwnedFd::from(child.stdout.take().unwrap());
     assert_eq!(&r.read_to_new_ustring().unwrap(), "x");
     let mut r = OwnedFd::from(child.stderr.take().unwrap());
@@ -78,7 +80,10 @@ fn fd() {
     assert_eq!(w.write(b"abc").unwrap(), 3);
     assert_eq!(w.borrow().write(b"abc").unwrap(), 3);
     assert_eq!(w.write_vectored(&[IoSlice::new(b"abc")]).unwrap(), 3);
-    assert_eq!(w.borrow().write_vectored(&[IoSlice::new(b"abc")]).unwrap(), 3);
+    assert_eq!(
+        w.borrow().write_vectored(&[IoSlice::new(b"abc")]).unwrap(),
+        3
+    );
     assert!(w.flush().is_ok());
     assert!(w.borrow().flush().is_ok());
 
@@ -87,8 +92,16 @@ fn fd() {
     assert_eq!(buf[0], b'a');
     assert_eq!(r.borrow().read(&mut buf).unwrap(), 1);
     assert_eq!(buf[0], b'b');
-    assert_eq!(r.read_vectored(&mut [IoSliceMut::new(&mut buf)]).unwrap(), 1);
+    assert_eq!(
+        r.read_vectored(&mut [IoSliceMut::new(&mut buf)]).unwrap(),
+        1
+    );
     assert_eq!(buf[0], b'c');
-    assert_eq!(r.borrow().read_vectored(&mut [IoSliceMut::new(&mut buf)]).unwrap(), 1);
+    assert_eq!(
+        r.borrow()
+            .read_vectored(&mut [IoSliceMut::new(&mut buf)])
+            .unwrap(),
+        1
+    );
     assert_eq!(buf[0], b'a');
 }

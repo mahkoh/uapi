@@ -353,7 +353,7 @@ fn metadata1() {
     assert!(fpathconf(*file, c::_PC_LINK_MAX).is_ok());
 }
 
-#[test_if_root]
+#[test_if(root)]
 fn chown1() {
     let tmp = Tempdir::new();
 

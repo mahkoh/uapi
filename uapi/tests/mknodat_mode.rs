@@ -3,7 +3,7 @@ use std::{fs::metadata, os::unix::fs::PermissionsExt};
 use testutils::*;
 use uapi::*;
 
-#[test_if_root]
+#[test_if(root)]
 fn mknodat1() {
     const MODE: c::mode_t = 0o712;
 

@@ -1,7 +1,7 @@
 use proc::*;
 use uapi::*;
 
-#[test_if_root]
+#[test_if(root)]
 fn setpid() {
     setgid(2).unwrap();
     assert_eq!(getgid(), 2);

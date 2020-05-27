@@ -10,16 +10,85 @@ use syn::{
     parse_macro_input, Attribute, Ident, LitInt, LitStr, Path,
 };
 
+lazy_static! {
+    static ref TC: TestConditions = {
+        let mut tc = TestConditions::default();
+        tc.root = unsafe { libc::geteuid() == 0 };
+
+        let mut utsname = unsafe { std::mem::zeroed() };
+        unsafe {
+            libc::uname(&mut utsname);
+        }
+
+        let regex = regex::bytes::Regex::new(r"^(\d+)\.(\d+)").unwrap();
+
+        if let Some(m) = regex.captures(unsafe {
+            &*(&utsname.release[..] as *const [libc::c_char] as *const [u8])
+        }) {
+            let parse = |i| {
+                std::str::from_utf8(m.get(i).unwrap().as_bytes())
+                    .unwrap()
+                    .parse()
+                    .unwrap()
+            };
+            let major: i32 = parse(1);
+            let minor: i32 = parse(2);
+
+            tc.linux_4_16 = major > 4 || (major == 4 && minor >= 16);
+            tc.linux_5_2 = major > 5 || (major == 5 && minor >= 2);
+        }
+
+        tc
+    };
+}
+
+#[derive(Default, Debug)]
+struct TestConditions {
+    root: bool,
+    linux_4_16: bool,
+    linux_5_2: bool,
+}
+
+impl Parse for TestConditions {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        let mut tc = TestConditions::default();
+
+        while !input.is_empty() {
+            let name = input.parse::<Ident>()?;
+            match &*name.to_string() {
+                "root" => tc.root = true,
+                "linux_4_16" => tc.linux_4_16 = true,
+                "linux_5_2" => tc.linux_5_2 = true,
+                n => {
+                    return Err(syn::Error::new(
+                        name.span(),
+                        format!("unknown test condition {}", n),
+                    ));
+                }
+            }
+            if !input.is_empty() {
+                parse_comma(input)?;
+            }
+        }
+
+        Ok(tc)
+    }
+}
+
 #[proc_macro_attribute]
-pub fn test_if_root(
-    _attr: proc_macro::TokenStream,
+pub fn test_if(
+    attr: proc_macro::TokenStream,
     item: proc_macro::TokenStream,
 ) -> proc_macro::TokenStream {
-    let item = TokenStream::from(item);
-    let ignore = match unsafe { libc::geteuid() } {
-        0 => quote!(),
-        _ => quote!(#[ignore]),
+    let tc = parse_macro_input!(attr as TestConditions);
+    let ignore = (tc.root && !TC.root)
+        || (tc.linux_4_16 && !TC.linux_4_16)
+        || (tc.linux_5_2 && !TC.linux_5_2);
+    let ignore = match ignore {
+        false => quote!(),
+        true => quote!(#[ignore]),
     };
+    let item = TokenStream::from(item);
     quote!(
         #[test]
         #ignore

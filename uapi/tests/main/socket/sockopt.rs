@@ -47,7 +47,7 @@ fn on_off6() {
     );
 }
 
-#[test_if_root]
+#[test_if(root)]
 fn on_off_root() {
     let socket = socket(c::AF_INET, c::SOCK_STREAM, 0).unwrap();
 
@@ -130,7 +130,7 @@ fn rcvbuf() {
     assert_eq!(getsockopt_so_sndbuf(*socket).unwrap(), buf);
 }
 
-#[test_if_root]
+#[test_if(root)]
 fn rcvbuf_force() {
     let socket = socket(c::AF_INET, c::SOCK_STREAM, 0).unwrap();
 

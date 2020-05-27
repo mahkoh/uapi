@@ -3,7 +3,7 @@ use uapi::*;
 // use proc::*;
 
 #[ignore] // better not remove this
-// #[test_if_root]
+// #[test_if(root)]
 #[test]
 #[cfg(target_os = "linux")]
 fn pivot_root_() {

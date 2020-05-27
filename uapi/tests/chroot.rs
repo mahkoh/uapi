@@ -2,7 +2,7 @@ use proc::*;
 use testutils::*;
 use uapi::*;
 
-#[test_if_root]
+#[test_if(root)]
 fn chroot1() {
     let tmp = Tempdir::new();
 

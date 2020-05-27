@@ -1,7 +1,7 @@
 use proc::*;
 use uapi::*;
 
-#[test_if_root]
+#[test_if(root)]
 #[cfg(target_os = "linux")]
 fn setpid() {
     setresgid(3, 4, 5).unwrap();

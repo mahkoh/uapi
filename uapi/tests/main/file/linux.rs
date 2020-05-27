@@ -1,6 +1,7 @@
 use std::io::{IoSlice, Write, IoSliceMut};
 use testutils::*;
 use uapi::*;
+use proc::*;
 use std::collections::HashSet;
 
 #[test]
@@ -36,28 +37,37 @@ fn read_write1() {
 
     assert_eq!(std::fs::read_to_string(path1).unwrap(), "axc");
 
-    pwritev2(*file, &[IoSlice::new(b"x")], 1, c::RWF_APPEND).unwrap();
-
-    assert_eq!(std::fs::read_to_string(path1).unwrap(), "axcx");
-
-    write(*file, b"y").unwrap();
-
-    assert_eq!(std::fs::read_to_string(path1).unwrap(), "yxcx");
-
-    pwritev2(*file, &[IoSlice::new(b"y")], -1, c::RWF_APPEND).unwrap();
-
-    assert_eq!(std::fs::read_to_string(path1).unwrap(), "yxcxy");
-
-    write(*file, b"z").unwrap();
-
-    assert_eq!(std::fs::read_to_string(path1).unwrap(), "yxcxyz");
-
     let mut buf = [0; 128];
     let num = preadv2(*file, &mut [IoSliceMut::new(&mut buf)], 2, 0).unwrap();
-    assert_eq!(&buf[..num], b"cxyz");
+    assert_eq!(&buf[..num], b"c");
 
     assert!(statfs(path1).is_ok());
     assert!(fstatfs(*file).is_ok());
+}
+
+#[test_if(linux_4_16)]
+fn read_write2() {
+    let tmp = Tempdir::new();
+
+    let path1 = &*format!("{}/a", tmp);
+
+    let file = open(path1, c::O_CREAT | c::O_RDWR, 0o777).unwrap();
+
+    pwritev2(*file, &[IoSlice::new(b"a")], 0, 0).unwrap();
+
+    assert_eq!(std::fs::read_to_string(path1).unwrap(), "a");
+
+    pwritev2(*file, &[IoSlice::new(b"x")], 1, c::RWF_APPEND).unwrap();
+
+    assert_eq!(std::fs::read_to_string(path1).unwrap(), "ax");
+
+    write(*file, b"y").unwrap();
+
+    assert_eq!(std::fs::read_to_string(path1).unwrap(), "yx");
+
+    pwritev2(*file, &[IoSlice::new(b"y")], -1, c::RWF_APPEND).unwrap();
+
+    assert_eq!(std::fs::read_to_string(path1).unwrap(), "yxy");
 }
 
 #[test]
