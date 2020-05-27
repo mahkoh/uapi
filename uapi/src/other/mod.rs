@@ -1,6 +1,6 @@
 use crate::*;
 use cfg_if::cfg_if;
-use std::{ffi::CStr, mem::MaybeUninit, ops::Deref};
+use std::{convert::TryInto, ffi::CStr, mem::MaybeUninit, ops::Deref};
 
 cfg_if! {
     if #[cfg(target_os = "linux")] {
@@ -78,7 +78,9 @@ pub fn daemon(nochdir: bool, noclose: bool) -> Result<()> {
 
 #[man(sethostname(2))]
 pub fn sethostname(buf: &[u8]) -> Result<()> {
-    let res = unsafe { c::sethostname(buf.as_ptr() as *const _, buf.len()) };
+    let res = unsafe {
+        c::sethostname(buf.as_ptr() as *const _, buf.len().try_into().or(einval())?)
+    };
     map_err!(res).map(drop)
 }
 

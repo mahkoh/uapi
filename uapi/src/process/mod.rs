@@ -177,7 +177,9 @@ pub fn getgroups(grouplist: &mut [c::gid_t]) -> Result<&mut [c::gid_t]> {
 
 #[man(setgroups(2))]
 pub fn setgroups(grouplist: &[c::gid_t]) -> Result<()> {
-    let res = unsafe { c::setgroups(grouplist.len(), grouplist.as_ptr()) };
+    let res = unsafe {
+        c::setgroups(grouplist.len().try_into().or(einval())?, grouplist.as_ptr())
+    };
     map_err!(res).map(drop)
 }
 
