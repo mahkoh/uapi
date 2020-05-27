@@ -22,18 +22,25 @@ fn on_off() {
     switch(*socket, setsockopt_so_reuseaddr, getsockopt_so_reuseaddr);
     switch(*socket, setsockopt_so_reuseport, getsockopt_so_reuseport);
     switch(*socket, setsockopt_tcp_nodelay, getsockopt_tcp_nodelay);
-    switch(
-        *socket,
-        setsockopt_ip_multicast_loop,
-        getsockopt_ip_multicast_loop,
-    );
     switch(*socket, setsockopt_so_broadcast, getsockopt_so_broadcast);
     switch(*socket, setsockopt_so_oobinline, getsockopt_so_oobinline);
     switch(*socket, setsockopt_so_keepalive, getsockopt_so_keepalive);
     switch(*socket, setsockopt_so_timestamp, getsockopt_so_timestamp);
     #[cfg(any(target_os = "android", target_os = "linux"))]
-    switch(*socket, setsockopt_so_passcred, getsockopt_so_passcred);
+        switch(*socket, setsockopt_so_passcred, getsockopt_so_passcred);
     switch(*socket, setsockopt_ip_pktinfo, getsockopt_ip_pktinfo);
+}
+
+#[test]
+#[cfg(not(target_os = "macos"))]
+fn on_off2() {
+    let socket = socket(c::AF_INET, c::SOCK_STREAM, 0).unwrap();
+
+    switch(
+        *socket,
+        setsockopt_ip_multicast_loop,
+        getsockopt_ip_multicast_loop,
+    );
 }
 
 #[test]
