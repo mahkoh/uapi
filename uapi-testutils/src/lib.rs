@@ -7,11 +7,15 @@ use std::{
     panic::AssertUnwindSafe,
     process::exit,
 };
-pub use strace::strace;
 use tempfile::TempDir;
 use uapi::*;
 
-mod strace;
+cfg_if::cfg_if! {
+    if #[cfg(any(target_os = "linux", target_os = "android"))] {
+        mod strace;
+        pub use strace::strace;
+    }
+}
 
 #[derive(Debug)]
 pub struct Tempdir {
