@@ -19,7 +19,7 @@ fn read_link() {
 
     assert_eq!(&read_link_to_new_ustring(c::AT_FDCWD, path).unwrap(), &link);
     assert_eq!(
-        &read_link_to_new_ustring(*open(tmp.bstr(), c::O_PATH, 0).unwrap(), "a").unwrap(),
+        &read_link_to_new_ustring(*open(tmp.bstr(), c::O_RDONLY, 0).unwrap(), "a").unwrap(),
         &link
     );
     assert_eq!(

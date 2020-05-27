@@ -48,10 +48,10 @@ fn on_off6() {
 }
 
 #[test_if(root)]
+#[cfg(any(target_os = "android", target_os = "linux"))]
 fn on_off_root() {
     let socket = socket(c::AF_INET, c::SOCK_STREAM, 0).unwrap();
 
-    #[cfg(any(target_os = "android", target_os = "linux"))]
     switch(
         *socket,
         setsockopt_ip_transparent,
@@ -103,6 +103,7 @@ fn acceptconn() {
 }
 
 #[test]
+#[cfg(not(target_os = "macos"))]
 fn membership() {
     let socket = socket(c::AF_INET, c::SOCK_DGRAM, 0).unwrap();
 
@@ -131,6 +132,7 @@ fn rcvbuf() {
 }
 
 #[test_if(root)]
+#[cfg(any(target_os = "android", target_os = "linux"))]
 fn rcvbuf_force() {
     let socket = socket(c::AF_INET, c::SOCK_STREAM, 0).unwrap();
 

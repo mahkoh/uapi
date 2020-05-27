@@ -18,7 +18,7 @@ fn read_write() {
     let path = format_ustr!("{}/a", tmp);
 
     let fd = open(&path, c::O_CREAT | c::O_WRONLY, 0o777).unwrap();
-    let fd2 = openat(*open(&tmp, c::O_PATH, 0).unwrap(), "a", c::O_RDONLY, 0).unwrap();
+    let fd2 = openat(*open(&tmp, c::O_RDONLY, 0).unwrap(), "a", c::O_RDONLY, 0).unwrap();
 
     let output = b"hello world";
     assert_eq!(write(*fd, output).unwrap(), 11);
@@ -178,7 +178,7 @@ fn metadata1() {
     unlink(path2).unwrap();
     assert!(access(path2, 0).is_err());
 
-    let tmpdir = open(&tmp, c::O_PATH, 0).unwrap();
+    let tmpdir = open(&tmp, c::O_RDONLY, 0).unwrap();
     symlinkat(path, *tmpdir, "b").unwrap();
 
     let mut buf = [0; 128];
@@ -214,7 +214,7 @@ fn metadata1() {
     assert!(access(path, 0).is_err());
     assert!(access(path3, 0).is_ok());
 
-    let dir2 = open(path2, c::O_PATH, 0).unwrap();
+    let dir2 = open(path2, c::O_RDONLY, 0).unwrap();
 
     renameat(*tmpdir, path3, *dir2, "a").unwrap();
     assert!(faccessat(*tmpdir, "c", 0, 0).is_err());
@@ -405,14 +405,14 @@ fn chown1() {
     assert_eq!(xstat.st_uid, 3);
     assert_eq!(xstat.st_gid, 4);
 
-    fchownat(*open(&tmp, c::O_PATH, 0).unwrap(), "b", 5, 6, 0).unwrap();
+    fchownat(*open(&tmp, c::O_RDONLY, 0).unwrap(), "b", 5, 6, 0).unwrap();
 
     let xstat = stat(path).unwrap();
     assert_eq!(xstat.st_uid, 5);
     assert_eq!(xstat.st_gid, 6);
 
     fchownat(
-        *open(&tmp, c::O_PATH, 0).unwrap(),
+        *open(&tmp, c::O_RDONLY, 0).unwrap(),
         "b",
         7,
         8,
