@@ -143,6 +143,7 @@ pub const RWF_APPEND: c::c_int = 0x00000010;
 
 #[cfg(target_env = "musl")]
 #[derive(Copy, Clone)]
+#[repr(C)]
 pub struct ip_mreqn {
     pub imr_multiaddr: c::in_addr,
     pub imr_address: c::in_addr,

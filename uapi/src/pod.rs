@@ -140,7 +140,6 @@ imp_pod! {
     c::in_pktinfo
     c::in6_pktinfo
 
-    c::sigset_t
     c::siginfo_t
     c::flock
     c::timespec
@@ -148,6 +147,11 @@ imp_pod! {
 
     OwnedFd
     Fd
+}
+
+#[cfg(not(target_os = "macos"))]
+imp_pod! {
+    c::sigset_t
 }
 
 #[cfg(target_os = "linux")]
