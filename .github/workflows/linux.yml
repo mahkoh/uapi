@@ -14,13 +14,47 @@ jobs:
     runs-on: ubuntu-16.04
     steps:
     - uses: actions/checkout@v2
-    - name: Install
+    - name: Show env
       run: |
         uname -a
         ldd --version
+    - name: Install
+      run: |
         curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain stable
         echo "::add-path::$HOME/.cargo/bin"
     - name: Build
-      run: sudo -E cargo build --verbose
+      run: sudo -E $HOME/.cargo/bin/cargo build --verbose
     - name: Run tests
       run: sudo -E $HOME/.cargo/bin/cargo test --verbose
+  latest-glibc:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Show env
+        run: |
+          uname -a
+          ldd --version
+      - name: Install
+        run: |
+          curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain stable
+          echo "::add-path::$HOME/.cargo/bin"
+      - name: Build
+        run: sudo -E $HOME/.cargo/bin/cargo build --verbose
+      - name: Run tests
+        run: sudo -E $HOME/.cargo/bin/cargo test --verbose
+  latest-musl:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Show env
+        run: |
+          uname -a
+          ldd --version
+      - name: Install
+        run: |
+          curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain stable-x86_64-unknown-linux-musl
+          echo "::add-path::$HOME/.cargo/bin"
+      - name: Build
+        run: sudo -E $HOME/.cargo/bin/cargo build --verbose
+      - name: Run tests
+        run: sudo -E $HOME/.cargo/bin/cargo test --verbose
