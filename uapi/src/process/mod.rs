@@ -1,7 +1,7 @@
 #![allow(non_snake_case)]
 
 use crate::*;
-use std::{convert::TryInto, ffi::CStr, ptr};
+use std::{convert::TryInto, ffi::CStr};
 
 cfg_if::cfg_if! {
     if #[cfg(target_os = "linux")] {
@@ -277,6 +277,7 @@ pub fn clock_nanosleep(
     tp: &c::timespec,
     remain: Option<&mut c::timespec>,
 ) -> Result<()> {
+    use std::ptr;
     let res = unsafe {
         c::clock_nanosleep(
             clockid,
