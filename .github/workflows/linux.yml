@@ -18,6 +18,8 @@ jobs:
     - uses: actions/checkout@v2
     - name: Install
       run: |
+        uname -a
+        ldd --version
         curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain stable
     - name: Build
       run: |
