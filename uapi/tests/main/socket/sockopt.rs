@@ -27,15 +27,9 @@ fn on_off() {
     switch(*socket, setsockopt_so_keepalive, getsockopt_so_keepalive);
     switch(*socket, setsockopt_so_timestamp, getsockopt_so_timestamp);
     #[cfg(any(target_os = "android", target_os = "linux"))]
-        switch(*socket, setsockopt_so_passcred, getsockopt_so_passcred);
+    switch(*socket, setsockopt_so_passcred, getsockopt_so_passcred);
     switch(*socket, setsockopt_ip_pktinfo, getsockopt_ip_pktinfo);
-}
-
-#[test]
-#[cfg(not(target_os = "macos"))]
-fn on_off2() {
-    let socket = socket(c::AF_INET, c::SOCK_STREAM, 0).unwrap();
-
+    #[cfg(not(target_os = "macos"))]
     switch(
         *socket,
         setsockopt_ip_multicast_loop,

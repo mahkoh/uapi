@@ -17,6 +17,7 @@ fn process6() {
             assert_eq!(WIFSTOPPED(status), false);
             assert_eq!(WIFCONTINUED(status), false);
             assert_eq!(WTERMSIG(status), c::SIGILL);
+            #[cfg(not(target_os = "macos"))]
             assert_eq!(WCOREDUMP(status), true);
         }
     }
