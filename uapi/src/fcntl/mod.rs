@@ -62,12 +62,14 @@ pub fn fcntl_getlk(fd: c::c_int, lock: &mut c::flock) -> Result<()> {
 }
 
 #[man("fcntl(2) with cmd = `F_SETPIPE_SZ`")]
+#[cfg(not(target_os = "macos"))]
 pub fn fcntl_setpipe_sz(fd: c::c_int, size: c::c_int) -> Result<c::c_int> {
     let res = unsafe { c::fcntl(fd, c::F_SETPIPE_SZ, size) };
     map_err!(res)
 }
 
 #[man("fcntl(2) with cmd = `F_GETPIPE_SZ`")]
+#[cfg(not(target_os = "macos"))]
 pub fn fcntl_getpipe_sz(fd: c::c_int) -> Result<c::c_int> {
     let res = unsafe { c::fcntl(fd, c::F_GETPIPE_SZ) };
     map_err!(res)

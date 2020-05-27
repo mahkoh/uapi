@@ -1,6 +1,8 @@
 use crate::*;
-use std::{convert::TryFrom, mem};
-use std::convert::TryInto;
+use std::{
+    convert::{TryFrom, TryInto},
+    mem,
+};
 
 #[cfg(target_os = "linux")]
 const ALIGN: usize = mem::size_of::<usize>() - 1;

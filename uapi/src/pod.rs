@@ -133,20 +133,14 @@ imp_pod! {
     c::sockaddr_un
     c::sockaddr_in
     c::sockaddr_in6
-    c::sockaddr_nl
-    c::sockaddr_alg
-    c::sockaddr_ll
-    c::sockaddr_vm
 
     c::msghdr
     c::cmsghdr
 
-    c::ucred
     c::in_pktinfo
     c::in6_pktinfo
 
     c::sigset_t
-    c::signalfd_siginfo
     c::siginfo_t
     c::flock
     c::timespec
@@ -154,6 +148,20 @@ imp_pod! {
 
     OwnedFd
     Fd
+}
+
+#[cfg(target_os = "linux")]
+imp_pod! {
+    c::sockaddr_alg
+    c::sockaddr_nl
+    c::sockaddr_ll
+    c::sockaddr_vm
+    c::signalfd_siginfo
+}
+
+#[cfg(not(target_os = "macos"))]
+imp_pod! {
+    c::ucred
 }
 
 /// Marker trait for types without padding

@@ -4,6 +4,7 @@ use testutils::*;
 use uapi::*;
 
 #[test_if(root)]
+#[cfg(not(target_os = "macos"))]
 fn mknodat1() {
     const MODE: c::mode_t = 0o712;
 

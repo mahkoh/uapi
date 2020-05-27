@@ -63,6 +63,7 @@ pub fn pread(fd: c::c_int, buf: &mut [u8], offset: c::off_t) -> Result<usize> {
 }
 
 #[man(preadv(2))]
+#[cfg(not(target_os = "macos"))]
 pub fn preadv(
     fd: c::c_int,
     bufs: &mut [IoSliceMut<'_>],
@@ -105,6 +106,7 @@ pub fn writev(fd: c::c_int, bufs: &[IoSlice<'_>]) -> Result<usize> {
 }
 
 #[man(pwritev(2))]
+#[cfg(not(target_os = "macos"))]
 pub fn pwritev(fd: c::c_int, bufs: &[IoSlice<'_>], offset: c::off_t) -> Result<usize> {
     let len = i32::try_from(bufs.len()).unwrap_or(i32::max_value());
     let val = unsafe { c::pwritev(fd, bufs.as_ptr() as *const _, len, offset) };
@@ -119,6 +121,7 @@ pub fn mknod<'a>(path: impl IntoUstr<'a>, mode: c::mode_t, dev: c::dev_t) -> Res
 }
 
 #[man(mknodat(2))]
+#[cfg(not(target_os = "macos"))]
 pub fn mknodat<'a>(
     fd: c::c_int,
     path: impl IntoUstr<'a>,
@@ -195,6 +198,7 @@ pub fn flock(fd: c::c_int, operation: c::c_int) -> Result<()> {
 }
 
 #[man(posix_fadvise(2))]
+#[cfg(not(target_os = "macos"))]
 pub fn posix_fadvise(
     fd: c::c_int,
     offset: c::off_t,
@@ -206,6 +210,7 @@ pub fn posix_fadvise(
 }
 
 #[man(posix_fallocate(3))]
+#[cfg(not(target_os = "macos"))]
 pub fn posix_fallocate(fd: c::c_int, offset: c::off_t, len: c::off_t) -> Result<()> {
     let val = unsafe { c::posix_fallocate(fd, offset, len) };
     map_err!(val).map(drop)
@@ -421,6 +426,7 @@ pub fn fsync(fd: c::c_int) -> Result<()> {
 }
 
 #[man(fdatasync(2))]
+#[cfg(not(target_os = "macos"))]
 pub fn fdatasync(fd: c::c_int) -> Result<()> {
     let val = unsafe { c::fdatasync(fd) };
     map_err!(val).map(drop)
@@ -509,6 +515,7 @@ pub fn mkfifo<'a>(pathname: impl IntoUstr<'a>, mode: c::mode_t) -> Result<()> {
 }
 
 #[man(mkfifoat(3))]
+#[cfg(not(target_os = "macos"))]
 pub fn mkfifoat<'a>(
     dirfd: c::c_int,
     pathname: impl IntoUstr<'a>,

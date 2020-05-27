@@ -1,6 +1,6 @@
 use cfg_if::cfg_if;
 use proc::*;
-use std::io::{IoSlice, IoSliceMut};
+use std::io::{IoSlice, IoSliceMut, Write};
 use testutils::*;
 use uapi::*;
 
@@ -83,13 +83,28 @@ fn read_write() {
 
     assert_eq!(pread(*fd2, &mut buf, 11).unwrap(), 12);
     assert_eq!(&buf, testtesttest);
+}
+
+#[test]
+#[cfg(not(target_os = "macos"))]
+fn read_write2() {
+    let tmp = Tempdir::new();
+
+    let path = format_ustr!("{}/a", tmp);
+
+    let output = b"hello world";
+    let testtesttest = b"testtesttest";
+
+    let mut fd = open(&path, c::O_CREAT | c::O_RDWR, 0o777).unwrap();
+    fd.write_all(output).unwrap();
+    fd.write_all(testtesttest).unwrap();
 
     let mut buf1 = [0; 10];
     let mut buf2 = [0; 12];
 
     assert_eq!(
         preadv(
-            *fd2,
+            *fd,
             &mut [IoSliceMut::new(&mut buf1), IoSliceMut::new(&mut buf2)],
             1
         )
@@ -111,19 +126,20 @@ fn read_write() {
     let mut buf2 = [0; 12];
 
     assert_eq!(
-        readv(
-            *fd2,
+        preadv(
+            *fd,
             &mut [
                 IoSliceMut::new(&mut buf0),
                 IoSliceMut::new(&mut buf1),
                 IoSliceMut::new(&mut buf2)
-            ]
+            ],
+            0
         )
         .unwrap(),
         33
     );
     assert_eq!(buf0, [0; 10]);
-    assert_eq!(&buf1, b"hello world");
+    assert_eq!(&buf1, output);
     assert_eq!(&buf2, testtesttest);
 
     truncate(&path, 0).unwrap();
@@ -334,13 +350,6 @@ fn metadata1() {
     let xstat = stat(path3).unwrap();
     assert_eq!(xstat.st_mode & c::S_IFMT, c::S_IFIFO);
 
-    unlink(path3).unwrap();
-
-    mkfifoat(*tmpdir, "c", 0).unwrap();
-
-    let xstat = stat(path3).unwrap();
-    assert_eq!(xstat.st_mode & c::S_IFMT, c::S_IFIFO);
-
     assert_eq!(isatty(-1), Err(Errno(c::EBADF)));
     assert_eq!(isatty(*file), Err(Errno(c::ENOTTY)));
 
@@ -348,9 +357,25 @@ fn metadata1() {
     assert!(statvfs(path).is_ok());
     assert!(fstatvfs(*file).is_ok());
     assert!(fsync(*file).is_ok());
-    assert!(fdatasync(*file).is_ok());
     assert!(pathconf(path, c::_PC_LINK_MAX).is_ok());
     assert!(fpathconf(*file, c::_PC_LINK_MAX).is_ok());
+}
+
+#[test]
+#[cfg(not(target_os = "macos"))]
+fn metadata2() {
+    let tmp = Tempdir::new();
+    let path = &*format!("{}/a", tmp);
+    let path3 = &*format!("{}/c", tmp);
+
+    let tmpdir = open(tmp.bstr(), c::O_PATH, 0).unwrap();
+    let file = open(path, c::O_CREAT | c::O_RDONLY, 0).unwrap();
+    assert!(fdatasync(*file).is_ok());
+
+    mkfifoat(*tmpdir, "c", 0).unwrap();
+
+    let xstat = stat(path3).unwrap();
+    assert_eq!(xstat.st_mode & c::S_IFMT, c::S_IFIFO);
 }
 
 #[test_if(root)]

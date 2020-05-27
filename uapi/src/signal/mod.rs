@@ -80,6 +80,7 @@ pub fn sigwait(set: &c::sigset_t) -> Result<c::c_int> {
 }
 
 #[man(sigwaitinfo(2))]
+#[cfg(not(target_os = "macos"))]
 pub fn sigwaitinfo(
     set: &c::sigset_t,
     info: Option<&mut c::siginfo_t>,
@@ -91,6 +92,7 @@ pub fn sigwaitinfo(
 }
 
 #[man(sigtimedwait(2))]
+#[cfg(not(target_os = "macos"))]
 pub fn sigtimedwait(
     set: &c::sigset_t,
     info: Option<&mut c::siginfo_t>,

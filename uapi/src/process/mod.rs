@@ -107,6 +107,7 @@ pub fn execvp<'a, 'b>(pathname: impl IntoUstr<'a>, argv: &UstrPtr) -> Result<()>
 }
 
 #[man(fexecve(3))]
+#[cfg(not(target_os = "macos"))]
 pub fn fexecve(fd: c::c_int, argv: &UstrPtr, envp: &UstrPtr) -> Result<()> {
     let res = unsafe { c::fexecve(fd, argv.as_ptr(), envp.as_ptr()) };
     map_err!(res).map(drop)
@@ -220,18 +221,21 @@ pub fn pause() {
 }
 
 #[man(setresuid(2))]
+#[cfg(not(target_os = "macos"))]
 pub fn setresuid(ruid: c::uid_t, euid: c::uid_t, suid: c::uid_t) -> Result<()> {
     let res = unsafe { c::setresuid(ruid, euid, suid) };
     map_err!(res).map(drop)
 }
 
 #[man(setresgid(2))]
+#[cfg(not(target_os = "macos"))]
 pub fn setresgid(rgid: c::gid_t, egid: c::gid_t, sgid: c::gid_t) -> Result<()> {
     let res = unsafe { c::setresgid(rgid, egid, sgid) };
     map_err!(res).map(drop)
 }
 
 #[man(getresuid(2))]
+#[cfg(not(target_os = "macos"))]
 pub fn getresuid() -> Result<(c::uid_t, c::uid_t, c::uid_t)> {
     let (mut ruid, mut euid, mut suid) = (0, 0, 0);
     let res = unsafe { c::getresuid(&mut ruid, &mut euid, &mut suid) };
@@ -239,6 +243,7 @@ pub fn getresuid() -> Result<(c::uid_t, c::uid_t, c::uid_t)> {
 }
 
 #[man(getresgid(2))]
+#[cfg(not(target_os = "macos"))]
 pub fn getresgid() -> Result<(c::gid_t, c::gid_t, c::gid_t)> {
     let (mut rgid, mut egid, mut sgid) = (0, 0, 0);
     let res = unsafe { c::getresgid(&mut rgid, &mut egid, &mut sgid) };
@@ -258,12 +263,14 @@ pub fn clock_gettime(clockid: c::clockid_t, tp: &mut c::timespec) -> Result<()> 
 }
 
 #[man(clock_settime(2))]
+#[cfg(not(target_os = "macos"))]
 pub fn clock_settime(clockid: c::clockid_t, tp: &c::timespec) -> Result<()> {
     let res = unsafe { c::clock_settime(clockid, tp) };
     map_err!(res).map(drop)
 }
 
 #[man(clock_nanosleep(2))]
+#[cfg(not(target_os = "macos"))]
 pub fn clock_nanosleep(
     clockid: c::clockid_t,
     flags: c::c_int,

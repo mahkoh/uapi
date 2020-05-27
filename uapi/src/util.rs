@@ -78,7 +78,7 @@ macro_rules! imv {
                 <$t>::max_value()
             }
         }
-    }
+    };
 }
 
 imv!(i8);

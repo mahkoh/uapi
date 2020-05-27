@@ -27,6 +27,7 @@ fn setfd() {
 }
 
 #[test]
+#[cfg(not(target_os = "macos"))]
 fn pipesize() {
     let (r, _) = pipe().unwrap();
 

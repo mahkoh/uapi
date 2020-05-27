@@ -39,6 +39,10 @@ imp! {
     c::sockaddr_un
     c::sockaddr_in
     c::sockaddr_in6
+}
+
+#[cfg(target_os = "linux")]
+imp! {
     c::sockaddr_nl
     c::sockaddr_alg
     c::sockaddr_ll
@@ -245,7 +249,13 @@ pub fn recvmsg<T: SockAddr + ?Sized>(
         .as_mut()
         .map(|b| b.as_mut_ptr() as *mut _)
         .unwrap_or(ptr::null_mut());
-    c_msghdr.msg_controllen = msghdr.control.as_ref().map(|b| b.len()).unwrap_or(0).try_into().unwrap_or(max_value());
+    c_msghdr.msg_controllen = msghdr
+        .control
+        .as_ref()
+        .map(|b| b.len())
+        .unwrap_or(0)
+        .try_into()
+        .unwrap_or(max_value());
     c_msghdr.msg_name = sockaddr_ptr as *mut _;
     c_msghdr.msg_namelen = sockaddr_len;
 
@@ -253,7 +263,8 @@ pub fn recvmsg<T: SockAddr + ?Sized>(
     map_err!(res)?;
 
     if let Some(control) = msghdr.control.as_mut() {
-        *control = &mut mem::replace(control, &mut [])[..c_msghdr.msg_controllen as usize];
+        *control =
+            &mut mem::replace(control, &mut [])[..c_msghdr.msg_controllen as usize];
     }
     msghdr.flags = c_msghdr.msg_flags;
 
@@ -284,7 +295,12 @@ pub fn sendmsg<'a, T: SockAddr + ?Sized>(
         .control
         .map(|b| b.as_ptr() as *mut _)
         .unwrap_or(ptr::null_mut());
-    c_msghdr.msg_controllen = msghdr.control.map(|b| b.len()).unwrap_or(0).try_into().unwrap_or(max_value());
+    c_msghdr.msg_controllen = msghdr
+        .control
+        .map(|b| b.len())
+        .unwrap_or(0)
+        .try_into()
+        .unwrap_or(max_value());
     c_msghdr.msg_name = sockaddr_ptr as *mut _;
     c_msghdr.msg_namelen = sockaddr_len;
 

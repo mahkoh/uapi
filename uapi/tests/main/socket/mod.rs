@@ -156,6 +156,8 @@ fn cmsg1() {
         .collect();
 
     let (a, b) = socketpair(c::AF_UNIX, c::SOCK_DGRAM, 0).unwrap();
+
+    #[cfg(not(target_os = "macos"))]
     setsockopt_so_passcred(*b, 1).unwrap();
 
     {
@@ -200,6 +202,7 @@ fn cmsg1() {
 
         assert!(cmsg.len() > 0);
 
+        #[cfg(not(target_os = "macos"))]
         let mut saw_cred = false;
 
         while cmsg.len() > 0 {
@@ -215,6 +218,7 @@ fn cmsg1() {
                         assert!(inos.remove(&fstat(*fd).unwrap().st_ino));
                     }
                 }
+                #[cfg(not(target_os = "macos"))]
                 (c::SOL_SOCKET, c::SCM_CREDENTIALS) => {
                     let data: c::ucred = pod_read(data).unwrap();
                     assert_eq!(data.pid, getpid());
@@ -226,7 +230,9 @@ fn cmsg1() {
             }
         }
 
+        #[cfg(not(target_os = "macos"))]
         assert!(saw_cred);
+
         assert!(inos.is_empty());
     }
 }

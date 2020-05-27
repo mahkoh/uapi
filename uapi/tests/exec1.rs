@@ -51,6 +51,7 @@ fn exec1() {
         n => check_exit(n, 68),
     }
 
+    #[cfg(not(target_os = "macos"))]
     match unsafe { fork().unwrap() } {
         0 => in_fork(|| {
             let mut buf = sh();

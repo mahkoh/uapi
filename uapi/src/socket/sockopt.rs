@@ -39,7 +39,9 @@ mod fuckrustfmt {
     sock_opt!(bi, IPPROTO_IP, IP_PKTINFO);
     #[cfg(any(target_os = "android", target_os = "freebsd", target_os = "ios", target_os = "linux", target_os = "macos", target_os = "netbsd", target_os = "openbsd"))]
     sock_opt!(bi, IPPROTO_IPV6, IPV6_RECVPKTINFO);
+    #[cfg(not(target_os = "macos"))]
     sock_opt!(set, IPPROTO_IP, IP_ADD_MEMBERSHIP, ty = c::ip_mreqn);
+    #[cfg(not(target_os = "macos"))]
     sock_opt!(set, IPPROTO_IP, IP_DROP_MEMBERSHIP, ty = c::ip_mreqn);
     #[cfg(any(target_os = "android", target_os = "linux"))]
     sock_opt!(get, SOL_IP, SO_ORIGINAL_DST, ty = c::sockaddr_in);

@@ -26,6 +26,16 @@ fn signal_() {
     raise(c::SIGUSR2).unwrap();
 
     assert_eq!(sigwait(&set), Ok(c::SIGUSR2));
+}
+
+#[test]
+#[cfg(not(target_os = "macos"))]
+fn signal2_() {
+    let mut set = empty_sig_set().unwrap();
+
+    sigaddset(&mut set, c::SIGUSR2).unwrap();
+
+    pthread_sigmask(c::SIG_SETMASK, Some(&set), None).unwrap();
 
     raise(c::SIGUSR2).unwrap();
 
