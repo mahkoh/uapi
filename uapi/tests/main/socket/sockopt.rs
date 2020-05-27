@@ -10,7 +10,7 @@ fn switch(
     switch(socket, 0).unwrap();
     assert_eq!(get(socket).unwrap(), 0);
     switch(socket, 1).unwrap();
-    assert_eq!(get(socket).unwrap(), 1);
+    assert_ne!(get(socket).unwrap(), 0);
     switch(socket, 0).unwrap();
     assert_eq!(get(socket).unwrap(), 0);
 }

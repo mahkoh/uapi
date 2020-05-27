@@ -149,11 +149,16 @@ fn cmsg1() {
     let f2 = open(format!("{}/b", tmp), c::O_CREAT | c::O_RDONLY, 0).unwrap();
     let f3 = open(format!("{}/c", tmp), c::O_CREAT | c::O_RDONLY, 0).unwrap();
 
-    let mut inos: HashSet<c::ino_t> = [*f1, *f2, *f3]
-        .iter()
-        .map(|f| fstat(*f).unwrap())
-        .map(|s| s.st_ino)
-        .collect();
+    let mut inos: HashSet<c::ino_t> = [
+        *f1,
+        *f2,
+        #[cfg(not(target_os = "macos"))]
+        *f3,
+    ]
+    .iter()
+    .map(|f| fstat(*f).unwrap())
+    .map(|s| s.st_ino)
+    .collect();
 
     let (a, b) = socketpair(c::AF_UNIX, c::SOCK_DGRAM, 0).unwrap();
 
@@ -171,7 +176,11 @@ fn cmsg1() {
 
             let mut len = 0;
             len += cmsg_write(&mut buf, hdr, &[*f1, *f2]).unwrap();
-            // len += cmsg_write(&mut buf, hdr, &[*f3]).unwrap();
+            cfg_if::cfg_if! {
+                if #[cfg(not(target_os = "macos"))] {
+                    len += cmsg_write(&mut buf, hdr, &[*f3]).unwrap();
+                }
+            }
             len
         };
 
