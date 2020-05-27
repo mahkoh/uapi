@@ -53,7 +53,7 @@ jobs:
       - name: Install
         run: |
           curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain stable
-          . $HOME/.cargo/bin
+          . $HOME/.cargo/env
           rustup target add x86_64-unknown-linux-musl
           echo "::add-path::$HOME/.cargo/bin"
       - name: Build
