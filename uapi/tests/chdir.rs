@@ -7,7 +7,6 @@ fn chdir1() {
     let tmpdir = &std::fs::canonicalize(tmp.bstr()).unwrap();
 
     let mut buf1 = [0; 1024];
-    let mut buf2 = [0; 1024];
     let old = getcwd(&mut buf1).unwrap();
 
     chdir(&tmp).unwrap();

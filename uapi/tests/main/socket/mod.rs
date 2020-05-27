@@ -171,7 +171,7 @@ fn cmsg1() {
 
             let mut len = 0;
             len += cmsg_write(&mut buf, hdr, &[*f1, *f2]).unwrap();
-            len += cmsg_write(&mut buf, hdr, &[*f3]).unwrap();
+            // len += cmsg_write(&mut buf, hdr, &[*f3]).unwrap();
             len
         };
 
