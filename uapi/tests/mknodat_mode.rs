@@ -21,7 +21,7 @@ fn mknodat1() {
     };
 
     umask(0);
-    assert_eq!(f() as c::dev_t, MODE);
+    assert_eq!(f() as c::mode_t, MODE);
     umask(0o077);
-    assert_eq!(f() as c::dev_t, 0o700);
+    assert_eq!(f() as c::mode_t, 0o700);
 }
