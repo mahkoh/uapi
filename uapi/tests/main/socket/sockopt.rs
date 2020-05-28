@@ -111,7 +111,7 @@ fn acceptconn() {
 }
 
 #[test]
-#[cfg(not(any(target_os = "macos", target_os = "freebsd")))]
+#[cfg(not(any(target_os = "macos", target_os = "freebsd", target_os = "openbsd")))]
 fn membership() {
     use std::mem;
 

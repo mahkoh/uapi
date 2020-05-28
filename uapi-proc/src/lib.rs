@@ -84,6 +84,7 @@ pub fn test_if(
     let ignore = (tc.root && !TC.root)
         || (tc.linux_4_16 && !TC.linux_4_16)
         || (tc.linux_5_2 && !TC.linux_5_2);
+    #[allow(clippy::match_bool)] // already disabled upstream
     let ignore = match ignore {
         false => quote!(),
         true => quote!(#[ignore]),

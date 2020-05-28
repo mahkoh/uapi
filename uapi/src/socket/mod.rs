@@ -243,7 +243,7 @@ pub fn recvmsg<T: SockAddr + ?Sized>(
 
     let mut c_msghdr: c::msghdr = pod_zeroed();
     c_msghdr.msg_iov = msghdr.iov.as_mut_ptr() as *mut _;
-    c_msghdr.msg_iovlen = msghdr.iov.len().try_into().unwrap_or(max_value());
+    c_msghdr.msg_iovlen = msghdr.iov.len().try_into().unwrap_or(Integer::MAX_VALUE);
     c_msghdr.msg_control = msghdr
         .control
         .as_mut()
@@ -255,7 +255,7 @@ pub fn recvmsg<T: SockAddr + ?Sized>(
         .map(|b| b.len())
         .unwrap_or(0)
         .try_into()
-        .unwrap_or(max_value());
+        .unwrap_or(Integer::MAX_VALUE);
     c_msghdr.msg_name = sockaddr_ptr as *mut _;
     c_msghdr.msg_namelen = sockaddr_len;
 
@@ -290,7 +290,7 @@ pub fn sendmsg<'a, T: SockAddr + ?Sized>(
 
     let mut c_msghdr: c::msghdr = pod_zeroed();
     c_msghdr.msg_iov = msghdr.iov.as_ptr() as *mut _;
-    c_msghdr.msg_iovlen = msghdr.iov.len().try_into().unwrap_or(max_value());
+    c_msghdr.msg_iovlen = msghdr.iov.len().try_into().unwrap_or(Integer::MAX_VALUE);
     c_msghdr.msg_control = msghdr
         .control
         .map(|b| b.as_ptr() as *mut _)
@@ -300,7 +300,7 @@ pub fn sendmsg<'a, T: SockAddr + ?Sized>(
         .map(|b| b.len())
         .unwrap_or(0)
         .try_into()
-        .unwrap_or(max_value());
+        .unwrap_or(Integer::MAX_VALUE);
     c_msghdr.msg_name = sockaddr_ptr as *mut _;
     c_msghdr.msg_namelen = sockaddr_len;
 

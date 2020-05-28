@@ -4,21 +4,29 @@ use std::{
     mem,
 };
 
-#[cfg(target_os = "linux")]
-const ALIGN: usize = mem::size_of::<usize>() - 1;
-
 #[cfg(any(target_os = "dragonfly", target_os = "macos", target_os = "ios"))]
 const ALIGN: usize = 4 - 1;
 
-#[cfg(all(
-    target_os = "freebsd",
-    any(
-        target_arch = "aarch64",
-        target_arch = "arm",
-        target_arch = "powerpc64",
-        target_arch = "x86",
-        target_arch = "x86_64"
-    )
+#[cfg(any(
+    target_os = "linux",
+    all(
+        target_os = "freebsd",
+        any(
+            target_arch = "aarch64",
+            target_arch = "arm",
+            target_arch = "powerpc64",
+            target_arch = "x86",
+            target_arch = "x86_64"
+        )
+    ),
+    all(
+        target_os = "openbsd",
+        any(
+            target_arch = "aarch64",
+            target_arch = "x86",
+            target_arch = "x86_64"
+        )
+    ),
 ))]
 const ALIGN: usize = mem::size_of::<usize>() - 1;
 

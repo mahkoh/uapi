@@ -1,0 +1,13 @@
+image: openbsd/6.7
+sources:
+  - https://github.com/mahkoh/uapi
+tasks:
+  - install: |
+      doas pkg_add lang/rust
+  - build: |
+      cd uapi
+      doas cargo build --verbose
+  - test: |
+      cd uapi
+      export RUST_BACKTRACE=1
+      doas cargo test --verbose

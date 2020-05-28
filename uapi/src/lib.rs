@@ -1,4 +1,5 @@
 #![allow(deprecated)]
+#![allow(clippy::or_fun_call)]
 
 //! Unix API crate
 //!

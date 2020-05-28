@@ -202,7 +202,7 @@ pub fn flock(fd: c::c_int, operation: c::c_int) -> Result<()> {
 }
 
 #[man(posix_fadvise(2))]
-#[cfg(not(target_os = "macos"))]
+#[cfg(not(any(target_os = "macos", target_os = "openbsd")))]
 pub fn posix_fadvise(
     fd: c::c_int,
     offset: c::off_t,
@@ -214,7 +214,7 @@ pub fn posix_fadvise(
 }
 
 #[man(posix_fallocate(3))]
-#[cfg(not(target_os = "macos"))]
+#[cfg(not(any(target_os = "macos", target_os = "openbsd")))]
 pub fn posix_fallocate(fd: c::c_int, offset: c::off_t, len: c::off_t) -> Result<()> {
     let val = unsafe { c::posix_fallocate(fd, offset, len) };
     map_err!(val).map(drop)
@@ -299,6 +299,7 @@ pub fn utimensat<'a>(
 }
 
 #[man(lutimes(3))]
+#[cfg(not(any(target_os = "openbsd")))]
 pub fn lutimes<'a>(pathname: impl IntoUstr<'a>, times: &[c::timeval; 2]) -> Result<()> {
     let pathname = pathname.into_ustr();
     let val = unsafe { c::lutimes(pathname.as_ptr(), times.as_ptr()) };

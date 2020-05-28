@@ -148,7 +148,7 @@ imp_pod! {
     Fd
 }
 
-#[cfg(not(target_os = "macos"))]
+#[cfg(not(any(target_os = "macos", target_os = "openbsd")))]
 imp_pod! {
     c::sigset_t
 }
@@ -162,7 +162,7 @@ imp_pod! {
     c::signalfd_siginfo
 }
 
-#[cfg(not(any(target_os = "macos", target_os = "freebsd")))]
+#[cfg(not(any(target_os = "macos", target_os = "freebsd", target_os = "openbsd")))]
 imp_pod! {
     c::ucred
     c::in_pktinfo

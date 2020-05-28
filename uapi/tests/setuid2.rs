@@ -2,7 +2,7 @@
 use proc::*;
 
 #[test_if(root)]
-#[cfg(not(any(target_os = "macos", target_os = "freebsd")))]
+#[cfg(not(any(target_os = "macos", target_os = "freebsd", target_os = "openbsd")))]
 fn setpid() {
     use uapi::*;
 

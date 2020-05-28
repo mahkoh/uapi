@@ -110,7 +110,7 @@ fn read_write2() {
             &mut [IoSliceMut::new(&mut buf1), IoSliceMut::new(&mut buf2)],
             1
         )
-        .unwrap(),
+            .unwrap(),
         22
     );
     assert_eq!(&buf1, b"ello world");
@@ -137,7 +137,7 @@ fn read_write2() {
             ],
             0
         )
-        .unwrap(),
+            .unwrap(),
         33
     );
     assert_eq!(buf0, [0; 10]);
@@ -148,6 +148,23 @@ fn read_write2() {
 
     let xstat = fstat(*fd).unwrap();
     assert_eq!(xstat.st_size, 0);
+
+    posix_fallocate(*fd, 1, 1).unwrap();
+
+    let xstat = fstat(*fd).unwrap();
+    assert_eq!(xstat.st_size, 2);
+
+    assert!(posix_fadvise(*fd, 0, 0, 0).is_ok());
+}
+
+#[test]
+#[cfg(not(any(target_os = "macos", target_os = "openbsd")))]
+fn read_write3() {
+    let tmp = Tempdir::new();
+
+    let path = format_ustr!("{}/a", tmp);
+
+    let fd = open(&path, c::O_CREAT | c::O_RDWR, 0o777).unwrap();
 
     posix_fallocate(*fd, 1, 1).unwrap();
 
@@ -295,26 +312,6 @@ fn metadata1() {
 
     let timeval = [
         c::timeval {
-            tv_sec: 9,
-            tv_usec: 10,
-        },
-        c::timeval {
-            tv_sec: 11,
-            tv_usec: 12,
-        },
-    ];
-    assert!(lutimes(path, &timeval).is_ok());
-
-    let xstat = stat(path).unwrap();
-
-    assert_eq!(xstat.st_atime, 9);
-    assert_eq!(xstat.st_atime_nsec, 10000);
-
-    assert_eq!(xstat.st_mtime, 11);
-    assert_eq!(xstat.st_mtime_nsec, 12000);
-
-    let timeval = [
-        c::timeval {
             tv_sec: 13,
             tv_usec: 14,
         },
@@ -378,6 +375,34 @@ fn metadata2() {
 
     let xstat = stat(path3).unwrap();
     assert_eq!(xstat.st_mode & c::S_IFMT, c::S_IFIFO);
+}
+
+#[test]
+#[cfg(not(target_os = "openbsd"))]
+fn lutimes1() {
+    let tmp = Tempdir::new();
+    let path = &*format!("{}/a", tmp);
+    open(path, c::O_CREAT | c::O_RDONLY, 0).unwrap();
+
+    let timeval = [
+        c::timeval {
+            tv_sec: 9,
+            tv_usec: 10,
+        },
+        c::timeval {
+            tv_sec: 11,
+            tv_usec: 12,
+        },
+    ];
+    assert!(lutimes(path, &timeval).is_ok());
+
+    let xstat = stat(path).unwrap();
+
+    assert_eq!(xstat.st_atime, 9);
+    assert_eq!(xstat.st_atime_nsec, 10000);
+
+    assert_eq!(xstat.st_mtime, 11);
+    assert_eq!(xstat.st_mtime_nsec, 12000);
 }
 
 #[test_if(root)]

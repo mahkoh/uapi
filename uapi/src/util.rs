@@ -67,16 +67,14 @@ pub(crate) const fn einval<T>() -> Result<T> {
     Err(Errno(c::EINVAL))
 }
 
-pub(crate) trait MaxValue {
-    fn max_value() -> Self;
+pub(crate) trait Integer: Copy {
+    const MAX_VALUE: Self;
 }
 
 macro_rules! imv {
     ($t:ty) => {
-        impl MaxValue for $t {
-            fn max_value() -> Self {
-                <$t>::max_value()
-            }
+        impl Integer for $t {
+            const MAX_VALUE: Self = <$t>::max_value();
         }
     };
 }
@@ -93,7 +91,3 @@ imv!(u32);
 imv!(u64);
 imv!(u128);
 imv!(usize);
-
-pub(crate) fn max_value<T: MaxValue>() -> T {
-    T::max_value()
-}

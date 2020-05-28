@@ -63,6 +63,8 @@ pub fn dirfd(dir: &mut c::DIR) -> c::c_int {
 }
 
 /// Wrapper for `*mut libc::DIR`
+///
+/// Upon `Drop`, the `*mut libc::DIR` will be closed.
 pub struct Dir {
     dir: *mut c::DIR,
 }
@@ -117,5 +119,13 @@ impl<'a> Dirent<'a> {
     /// Returns `dirent.d_name` as a `Ustr`
     pub fn name(&self) -> &Ustr {
         unsafe { Ustr::from_ptr(self.raw.d_name.as_ptr()) }
+    }
+}
+
+impl<'a> Deref for Dirent<'a> {
+    type Target = c::dirent;
+
+    fn deref(&self) -> &Self::Target {
+        self.raw
     }
 }

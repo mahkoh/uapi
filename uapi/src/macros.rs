@@ -16,8 +16,8 @@ macro_rules! ustr {
 
 /// `fn(<integer type>) -> Result<integer type>`
 ///
-/// The result is `Err` iff the argument is `-1`. In this case the return value contains the current
-/// value of `ERRNO`.
+/// The result is `Err` if and only if the argument is `-1`. In this case the return value
+/// contains the current value of `ERRNO`.
 #[macro_export]
 macro_rules! map_err {
     ($expr:expr) => {{
