@@ -21,11 +21,7 @@ const ALIGN: usize = 4 - 1;
     ),
     all(
         target_os = "openbsd",
-        any(
-            target_arch = "aarch64",
-            target_arch = "x86",
-            target_arch = "x86_64"
-        )
+        any(target_arch = "aarch64", target_arch = "x86", target_arch = "x86_64")
     ),
 ))]
 const ALIGN: usize = mem::size_of::<usize>() - 1;

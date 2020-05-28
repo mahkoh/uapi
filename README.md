@@ -12,9 +12,14 @@ The following targets are supported:
 - x86_64-unknown-openbsd (6.7)
 - x86_64-apple-darwin (10.15)
 
+This crate contains little architecture-specific code. Therefore, other architectures
+(arm, aarch64, etc.) will probably also work.
+
 ## License
 
 This project is licensed under either of
+
 - Apache License, Version 2.0
 - MIT License
+
 at your option.

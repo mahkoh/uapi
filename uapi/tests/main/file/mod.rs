@@ -110,7 +110,7 @@ fn read_write2() {
             &mut [IoSliceMut::new(&mut buf1), IoSliceMut::new(&mut buf2)],
             1
         )
-            .unwrap(),
+        .unwrap(),
         22
     );
     assert_eq!(&buf1, b"ello world");
@@ -137,7 +137,7 @@ fn read_write2() {
             ],
             0
         )
-            .unwrap(),
+        .unwrap(),
         33
     );
     assert_eq!(buf0, [0; 10]);
