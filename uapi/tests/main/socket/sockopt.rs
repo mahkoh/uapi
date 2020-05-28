@@ -30,7 +30,13 @@ fn on_off() {
     switch(*socket, setsockopt_so_passcred, getsockopt_so_passcred);
     #[cfg(not(target_os = "freebsd"))]
     switch(*socket, setsockopt_ip_pktinfo, getsockopt_ip_pktinfo);
-    #[cfg(not(target_os = "macos"))]
+}
+
+#[test]
+#[cfg(not(target_os = "macos"))]
+fn on_off2() {
+    let socket = socket(c::AF_INET, c::SOCK_DGRAM, 0).unwrap();
+
     switch(
         *socket,
         setsockopt_ip_multicast_loop,
