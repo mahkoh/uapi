@@ -3,6 +3,7 @@
 .*
 !.gitignore
 !.github
+!.cirrus.yml
 Cargo.lock
 /coverage
 strace
