@@ -1,5 +1,7 @@
 # Unix API
 
+This crate contains safe wrappers around Unix APIs.
+
 ## Supported Targets
 
 A target is supported if and only if the crate is tested against it via CI.
@@ -14,6 +16,11 @@ The following targets are supported:
 
 This crate contains little architecture-specific code. Therefore, other architectures
 (arm, aarch64, etc.) will probably also work.
+
+## Safety Guarantee
+
+A crate which contains only safe code and which only uses safe APIs from this crate and
+libstd is, as a whole, safe.
 
 ## License
 
