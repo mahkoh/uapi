@@ -21,6 +21,7 @@ jobs:
     - name: Install
       run: |
         curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain nightly
+        rustup toolchain install nightly --allow-downgrade -c rustfmt
         echo "::add-path::$HOME/.cargo/bin"
     - name: Check
       run: cargo +nightly fmt -- --check
