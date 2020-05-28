@@ -105,7 +105,7 @@ fn acceptconn() {
 }
 
 #[test]
-#[cfg(not(target_os = "macos"))]
+#[cfg(not(any(target_os = "macos", target_os = "freebsd")))]
 fn membership() {
     let socket = socket(c::AF_INET, c::SOCK_DGRAM, 0).unwrap();
 

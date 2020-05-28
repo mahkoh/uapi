@@ -237,7 +237,7 @@ pub fn setresgid(rgid: c::gid_t, egid: c::gid_t, sgid: c::gid_t) -> Result<()> {
 }
 
 #[man(getresuid(2))]
-#[cfg(not(target_os = "macos"))]
+#[cfg(not(any(target_os = "macos", target_os = "freebsd")))]
 pub fn getresuid() -> Result<(c::uid_t, c::uid_t, c::uid_t)> {
     let (mut ruid, mut euid, mut suid) = (0, 0, 0);
     let res = unsafe { c::getresuid(&mut ruid, &mut euid, &mut suid) };
@@ -245,7 +245,7 @@ pub fn getresuid() -> Result<(c::uid_t, c::uid_t, c::uid_t)> {
 }
 
 #[man(getresgid(2))]
-#[cfg(not(target_os = "macos"))]
+#[cfg(not(any(target_os = "macos", target_os = "freebsd")))]
 pub fn getresgid() -> Result<(c::gid_t, c::gid_t, c::gid_t)> {
     let (mut rgid, mut egid, mut sgid) = (0, 0, 0);
     let res = unsafe { c::getresgid(&mut rgid, &mut egid, &mut sgid) };
@@ -272,7 +272,7 @@ pub fn clock_settime(clockid: c::clockid_t, tp: &c::timespec) -> Result<()> {
 }
 
 #[man(clock_nanosleep(2))]
-#[cfg(not(target_os = "macos"))]
+#[cfg(not(any(target_os = "macos", target_os = "freebsd")))]
 pub fn clock_nanosleep(
     clockid: c::clockid_t,
     flags: c::c_int,

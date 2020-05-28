@@ -27,7 +27,7 @@ fn setfd() {
 }
 
 #[test]
-#[cfg(not(target_os = "macos"))]
+#[cfg(not(any(target_os = "macos", target_os = "freebsd")))]
 fn pipesize() {
     let (r, _) = pipe().unwrap();
 

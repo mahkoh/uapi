@@ -2,7 +2,7 @@ use proc::*;
 use uapi::*;
 
 #[test_if(root)]
-#[cfg(target_os = "linux")]
+#[cfg(not(any(target_os = "macos", target_os = "freebsd")))]
 fn setpid() {
     setresgid(3, 4, 5).unwrap();
     assert_eq!(getresgid().unwrap(), (3, 4, 5));

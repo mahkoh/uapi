@@ -137,7 +137,6 @@ imp_pod! {
     c::msghdr
     c::cmsghdr
 
-    c::in_pktinfo
     c::in6_pktinfo
 
     c::siginfo_t
@@ -163,9 +162,10 @@ imp_pod! {
     c::signalfd_siginfo
 }
 
-#[cfg(not(target_os = "macos"))]
+#[cfg(not(any(target_os = "macos", target_os = "freebsd")))]
 imp_pod! {
     c::ucred
+    c::in_pktinfo
 }
 
 /// Marker trait for types without padding

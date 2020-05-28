@@ -19,7 +19,7 @@ pub fn open<'a>(
     oflag: c::c_int,
     mode: c::mode_t,
 ) -> Result<OwnedFd> {
-    #[cfg(target_os = "macos")]
+    #[cfg(any(target_os = "macos", target_os = "freebsd"))]
     let mode = mode as c::c_int;
     let path = path.into_ustr();
     let val = unsafe { c::open(path.as_ptr(), oflag, mode) };
@@ -33,7 +33,7 @@ pub fn openat<'a>(
     oflag: c::c_int,
     mode: c::mode_t,
 ) -> Result<OwnedFd> {
-    #[cfg(target_os = "macos")]
+    #[cfg(any(target_os = "macos", target_os = "freebsd"))]
     let mode = mode as c::c_int;
     let path = path.into_ustr();
     let val = unsafe { c::openat(dfd, path.as_ptr(), oflag, mode) };
