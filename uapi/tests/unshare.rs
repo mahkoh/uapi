@@ -1,11 +1,10 @@
 #[cfg(target_os = "linux")]
 mod wrapper {
-    use uapi::*;
     use proc::*;
+    use uapi::*;
 
     #[test_if(root)]
     fn unshare_() {
-
         let hn = "abc123abc";
 
         let old_ns = open("/proc/self/ns/uts", c::O_RDONLY, 0).unwrap();

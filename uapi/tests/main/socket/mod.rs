@@ -147,6 +147,7 @@ fn cmsg1() {
     let tmp = Tempdir::new();
     let f1 = open(format!("{}/a", tmp), c::O_CREAT | c::O_RDONLY, 0).unwrap();
     let f2 = open(format!("{}/b", tmp), c::O_CREAT | c::O_RDONLY, 0).unwrap();
+    #[cfg(not(target_os = "macos"))]
     let f3 = open(format!("{}/c", tmp), c::O_CREAT | c::O_RDONLY, 0).unwrap();
 
     let mut inos: HashSet<c::ino_t> = [

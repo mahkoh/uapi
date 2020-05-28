@@ -5,7 +5,6 @@ mod wrapper {
 
     #[test_if(root)]
     fn sethostname1() {
-
         unshare(c::CLONE_NEWUTS).unwrap();
         let name = b"hello world";
         sethostname(name).unwrap();

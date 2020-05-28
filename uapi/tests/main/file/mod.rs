@@ -1,6 +1,6 @@
 use cfg_if::cfg_if;
 use proc::*;
-use std::io::{IoSlice, IoSliceMut, Write};
+use std::io::{IoSlice, IoSliceMut};
 use testutils::*;
 use uapi::*;
 
@@ -88,6 +88,8 @@ fn read_write() {
 #[test]
 #[cfg(not(target_os = "macos"))]
 fn read_write2() {
+    use std::io::Write;
+
     let tmp = Tempdir::new();
 
     let path = format_ustr!("{}/a", tmp);

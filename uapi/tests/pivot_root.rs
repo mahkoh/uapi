@@ -7,7 +7,6 @@ mod wrapper {
     // #[test_if(root)]
     #[test]
     fn pivot_root_() {
-
         let tmp = Tempdir::new();
 
         let sub1 = &*format!("{}/a", tmp);
