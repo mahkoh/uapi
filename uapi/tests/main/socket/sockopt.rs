@@ -15,6 +15,19 @@ fn switch(
     assert_eq!(get(socket).unwrap(), 0);
 }
 
+fn switch8(
+    socket: c::c_int,
+    switch: fn(c::c_int, u8) -> Result<()>,
+    get: fn(c::c_int) -> Result<u8>,
+) {
+    switch(socket, 0).unwrap();
+    assert_eq!(get(socket).unwrap(), 0);
+    switch(socket, 1).unwrap();
+    assert_ne!(get(socket).unwrap(), 0);
+    switch(socket, 0).unwrap();
+    assert_eq!(get(socket).unwrap(), 0);
+}
+
 #[test]
 fn on_off() {
     let socket = socket(c::AF_INET, c::SOCK_STREAM, 0).unwrap();
@@ -36,7 +49,7 @@ fn on_off2() {
     let socket = socket(c::AF_INET, c::SOCK_DGRAM, 0).unwrap();
 
     switch(*socket, setsockopt_so_broadcast, getsockopt_so_broadcast);
-    switch(
+    switch8(
         *socket,
         setsockopt_ip_multicast_loop,
         getsockopt_ip_multicast_loop,
