@@ -70,7 +70,7 @@ fn socket1() {
     assert_eq!(len, 11);
     assert_eq!(&buf[..11], b"hello world");
     client.write_all(b"hol up").unwrap();
-    close(client).unwrap();
+    shutdown(*client, c::SHUT_WR).unwrap();
 
     thread.join().unwrap();
 }
