@@ -27,7 +27,7 @@ mod fuckrustfmt {
     sock_opt!(bi, SOL_SOCKET, SO_REUSEADDR);
     sock_opt!(bi, SOL_SOCKET, SO_REUSEPORT);
     sock_opt!(bi, IPPROTO_TCP, TCP_NODELAY);
-    sock_opt!(bi, IPPROTO_IP, IP_MULTICAST_LOOP);
+    sock_opt!(bi, IPPROTO_IP, IP_MULTICAST_LOOP, ty = u8);
     sock_opt!(bi, SOL_SOCKET, SO_BROADCAST);
     sock_opt!(bi, SOL_SOCKET, SO_OOBINLINE);
     sock_opt!(bi, SOL_SOCKET, SO_KEEPALIVE);
