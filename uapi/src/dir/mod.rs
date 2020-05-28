@@ -10,6 +10,7 @@ pub fn opendir<'a>(name: impl IntoUstr<'a>) -> Result<Dir> {
     let name = name.into_ustr();
     let dir = unsafe { c::opendir(name.as_ptr()) };
     if dir.is_null() {
+
         Err(Errno::default())
     } else {
         Ok(Dir { dir })
