@@ -1,0 +1,10 @@
+image: freebsd/latest
+sources:
+  - https://github.com/mahkoh/uapi
+tasks:
+  - install: |
+    curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain stable
+  - build: |
+    sudo -E $HOME/.cargo/bin/cargo build --verbose
+  - test: |
+    sudo -E $HOME/.cargo/bin/cargo test --verbose
