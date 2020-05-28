@@ -24,8 +24,6 @@ fn process5() {
             assert_eq!(pid, n);
             assert_eq!(WIFEXITED(status), false);
             // https://github.com/rust-lang/libc/issues/1782
-            #[cfg(target_os = "freebsd")]
-            assert_eq!(WIFSIGNALED(status), true);
             #[cfg(not(target_os = "freebsd"))]
             assert_eq!(WIFSIGNALED(status), false);
             assert_eq!(WIFSTOPPED(status), false);

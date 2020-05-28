@@ -147,13 +147,13 @@ fn cmsg1() {
     let tmp = Tempdir::new();
     let f1 = open(format!("{}/a", tmp), c::O_CREAT | c::O_RDONLY, 0).unwrap();
     let f2 = open(format!("{}/b", tmp), c::O_CREAT | c::O_RDONLY, 0).unwrap();
-    #[cfg(not(target_os = "macos"))]
+    #[cfg(not(any(target_os = "macos", target_os = "openbsd")))]
     let f3 = open(format!("{}/c", tmp), c::O_CREAT | c::O_RDONLY, 0).unwrap();
 
     let mut inos: HashSet<c::ino_t> = [
         *f1,
         *f2,
-        #[cfg(not(target_os = "macos"))]
+        #[cfg(not(any(target_os = "macos", target_os = "openbsd")))]
         *f3,
     ]
     .iter()
@@ -178,7 +178,7 @@ fn cmsg1() {
             let mut len = 0;
             len += cmsg_write(&mut buf, hdr, &[*f1, *f2]).unwrap();
             cfg_if::cfg_if! {
-                if #[cfg(not(target_os = "macos"))] {
+                if #[cfg(not(any(target_os = "macos", target_os = "openbsd")))] {
                     len += cmsg_write(&mut buf, hdr, &[*f3]).unwrap();
                 }
             }

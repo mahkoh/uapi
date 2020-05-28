@@ -21,6 +21,7 @@ mod fuckrustfmt {
     note that the attributes are not followed by a comma
      */
 
+    #[cfg(not(any(target_os = "macos", target_os = "openbsd")))]
     sock_opt!(get, SOL_SOCKET, SO_ACCEPTCONN);
     sock_opt!(bi, SOL_SOCKET, SO_LINGER, ty = c::linger);
     sock_opt!(bi, SOL_SOCKET, SO_REUSEADDR);
@@ -56,7 +57,7 @@ mod fuckrustfmt {
     #[cfg(target_os = "linux")]
     sock_opt!(bi, SOL_SOCKET, SO_MARK);
     sock_opt!(get, SOL_SOCKET, SO_TYPE);
-    sock_opt!(bi, IPPROTO_IP, IP_MULTICAST_TTL);
+    sock_opt!(bi, IPPROTO_IP, IP_MULTICAST_TTL, ty = u8);
     sock_opt!(bi, SOL_SOCKET, SO_RCVTIMEO, ty = c::timeval);
     sock_opt!(bi, SOL_SOCKET, SO_SNDTIMEO, ty = c::timeval);
     sock_opt!(get, SOL_SOCKET, SO_ERROR);

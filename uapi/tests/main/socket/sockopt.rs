@@ -101,7 +101,7 @@ fn linger() {
 }
 
 #[test]
-#[cfg(not(target_os = "macos"))] // todo
+#[cfg(not(any(target_os = "macos", target_os = "openbsd")))]
 fn acceptconn() {
     let socket = socket(c::AF_INET, c::SOCK_STREAM, 0).unwrap();
 
