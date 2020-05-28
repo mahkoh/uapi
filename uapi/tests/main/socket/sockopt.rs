@@ -83,7 +83,7 @@ fn linger() {
         },
     )
     .unwrap();
-    assert_eq!(getsockopt_so_linger(*socket).unwrap().l_onoff, 1);
+    assert_ne!(getsockopt_so_linger(*socket).unwrap().l_onoff, 0);
     setsockopt_so_linger(
         *socket,
         c::linger {
@@ -102,7 +102,7 @@ fn acceptconn() {
 
     assert_eq!(getsockopt_so_acceptconn(*socket).unwrap(), 0);
     listen(*socket, 128).unwrap();
-    assert_eq!(getsockopt_so_acceptconn(*socket).unwrap(), 1);
+    assert_ne!(getsockopt_so_acceptconn(*socket).unwrap(), 0);
 }
 
 #[test]
