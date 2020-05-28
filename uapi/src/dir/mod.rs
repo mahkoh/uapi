@@ -1,5 +1,6 @@
 use crate::*;
 use std::{
+    ffi::CStr,
     mem,
     ops::{Deref, DerefMut},
 };
@@ -116,9 +117,9 @@ pub struct Dirent<'a> {
 }
 
 impl<'a> Dirent<'a> {
-    /// Returns `dirent.d_name` as a `Ustr`
-    pub fn name(&self) -> &Ustr {
-        unsafe { Ustr::from_ptr(self.raw.d_name.as_ptr()) }
+    /// Returns `dirent.d_name` as a `CStr`
+    pub fn name(&self) -> &CStr {
+        unsafe { CStr::from_ptr(self.raw.d_name.as_ptr()) }
     }
 }
 

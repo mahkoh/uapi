@@ -23,7 +23,7 @@ fn readdir_x<F: Fn(&Tempdir) -> Result<Dir>>(f: F) {
     let mut entries = HashSet::new();
 
     while let Some(entry) = readdir(&mut dir) {
-        assert!(entries.insert(entry.unwrap().name().to_ustring()));
+        assert!(entries.insert(entry.unwrap().name().as_ustr().to_ustring()));
     }
 
     assert_eq!(result, entries);
@@ -43,7 +43,7 @@ fn fdopendir1() {
 }
 
 fn next(dir: &mut Dir) -> Ustring {
-    readdir(dir).unwrap().unwrap().name().to_ustring()
+    readdir(dir).unwrap().unwrap().name().as_ustr().to_ustring()
 }
 
 #[test]
