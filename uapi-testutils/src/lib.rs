@@ -73,7 +73,7 @@ impl<F: FnOnce()> Drop for Defer<F> {
 #[macro_export]
 macro_rules! defer {
     ($f:expr) => {
-        let _x = crate::Defer::new($f);
+        let _x = $crate::Defer::new($f);
     };
 }
 

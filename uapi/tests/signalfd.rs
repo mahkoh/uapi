@@ -1,8 +1,8 @@
-use uapi::*;
-
 #[test]
 #[cfg(target_os = "linux")]
 fn signalfd_() {
+    use uapi::*;
+
     let sfd = signal_fd_new(&empty_sig_set().unwrap(), 0).unwrap();
     assert_ne!(fcntl_getfd(*sfd).unwrap() & c::FD_CLOEXEC, c::FD_CLOEXEC);
 

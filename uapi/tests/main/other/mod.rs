@@ -9,9 +9,9 @@ cfg_if::cfg_if! {
 
 #[test]
 fn uname_() {
-    let res = uname().unwrap();
+    let _res = uname().unwrap();
     #[cfg(target_os = "linux")]
-    assert_eq!(res.sysname().as_ustr(), "Linux");
+    assert_eq!(_res.sysname().as_ustr(), "Linux");
 }
 
 #[test]

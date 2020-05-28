@@ -23,6 +23,7 @@ fn process5() {
             let (pid, status) = waitpid(n, c::WCONTINUED).unwrap();
             assert_eq!(pid, n);
             assert_eq!(WIFEXITED(status), false);
+            // https://github.com/rust-lang/libc/issues/1782
             #[cfg(target_os = "freebsd")]
             assert_eq!(WIFSIGNALED(status), true);
             #[cfg(not(target_os = "freebsd"))]

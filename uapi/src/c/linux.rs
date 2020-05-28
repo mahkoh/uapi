@@ -141,6 +141,7 @@ pub const RWF_SYNC: c::c_int = 0x00000004;
 pub const RWF_NOWAIT: c::c_int = 0x00000008;
 pub const RWF_APPEND: c::c_int = 0x00000010;
 
+// https://github.com/rust-lang/libc/issues/1783
 #[cfg(target_env = "musl")]
 #[derive(Copy, Clone)]
 #[repr(C)]

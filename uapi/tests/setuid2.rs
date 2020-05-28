@@ -1,9 +1,11 @@
+#[allow(unused_imports)]
 use proc::*;
-use uapi::*;
 
 #[test_if(root)]
 #[cfg(not(any(target_os = "macos", target_os = "freebsd")))]
 fn setpid() {
+    use uapi::*;
+
     setresgid(3, 4, 5).unwrap();
     assert_eq!(getresgid().unwrap(), (3, 4, 5));
 

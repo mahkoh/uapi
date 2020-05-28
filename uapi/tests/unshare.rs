@@ -1,24 +1,27 @@
-use proc::*;
-use uapi::*;
-
-#[test_if(root)]
 #[cfg(target_os = "linux")]
-fn unshare_() {
-    let hn = "abc123abc";
+mod wrapper {
+    use uapi::*;
+    use proc::*;
 
-    let old_ns = open("/proc/self/ns/uts", c::O_RDONLY, 0).unwrap();
+    #[test_if(root)]
+    fn unshare_() {
 
-    unshare(c::CLONE_NEWUTS).unwrap();
+        let hn = "abc123abc";
 
-    assert_ne!(gethostname(&mut [0; 128][..]).unwrap().as_ustr(), hn);
+        let old_ns = open("/proc/self/ns/uts", c::O_RDONLY, 0).unwrap();
 
-    sethostname(hn.as_bytes()).unwrap();
+        unshare(c::CLONE_NEWUTS).unwrap();
 
-    assert_eq!(gethostname(&mut [0; 128][..]).unwrap().as_ustr(), hn);
+        assert_ne!(gethostname(&mut [0; 128][..]).unwrap().as_ustr(), hn);
 
-    assert!(setns(*old_ns, c::CLONE_NEWPID).is_err());
+        sethostname(hn.as_bytes()).unwrap();
 
-    setns(*old_ns, 0).unwrap();
+        assert_eq!(gethostname(&mut [0; 128][..]).unwrap().as_ustr(), hn);
 
-    assert_ne!(gethostname(&mut [0; 128][..]).unwrap().as_ustr(), hn);
+        assert!(setns(*old_ns, c::CLONE_NEWPID).is_err());
+
+        setns(*old_ns, 0).unwrap();
+
+        assert_ne!(gethostname(&mut [0; 128][..]).unwrap().as_ustr(), hn);
+    }
 }

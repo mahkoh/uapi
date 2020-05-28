@@ -1,5 +1,5 @@
+#[allow(unused_imports)]
 use proc::*;
-use std::mem;
 use uapi::*;
 
 fn switch(
@@ -113,6 +113,8 @@ fn acceptconn() {
 #[test]
 #[cfg(not(any(target_os = "macos", target_os = "freebsd")))]
 fn membership() {
+    use std::mem;
+
     let socket = socket(c::AF_INET, c::SOCK_DGRAM, 0).unwrap();
 
     let mut reqn: c::ip_mreqn = unsafe { mem::zeroed() };
@@ -304,6 +306,8 @@ fn error() {
 #[test]
 #[cfg(any(target_os = "android", target_os = "linux"))]
 fn membership6() {
+    use std::mem;
+
     let socket = socket(c::AF_INET6, c::SOCK_DGRAM, 0).unwrap();
 
     let mut reqn: c::ipv6_mreq = unsafe { mem::zeroed() };

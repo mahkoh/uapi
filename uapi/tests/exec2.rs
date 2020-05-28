@@ -1,20 +1,20 @@
-use testutils::*;
-use uapi::*;
-
-fn check_exit(n: c::pid_t, code: c::c_int) {
-    let (pid, status) = waitpid(n, 0).unwrap();
-    assert_eq!(pid, n);
-    assert_eq!(WIFEXITED(status), true);
-    assert_eq!(WEXITSTATUS(status), code);
-}
-
-fn sh() -> UstrPtr<'static> {
-    ["sh", "-c"].iter().copied().collect()
-}
-
 #[test]
 #[cfg(target_os = "linux")]
 fn exec2() {
+    use testutils::*;
+    use uapi::*;
+
+    fn check_exit(n: c::pid_t, code: c::c_int) {
+        let (pid, status) = waitpid(n, 0).unwrap();
+        assert_eq!(pid, n);
+        assert_eq!(WIFEXITED(status), true);
+        assert_eq!(WEXITSTATUS(status), code);
+    }
+
+    fn sh() -> UstrPtr<'static> {
+        ["sh", "-c"].iter().copied().collect()
+    }
+
     match unsafe { fork().unwrap() } {
         0 => in_fork(|| {
             let mut buf = sh();
