@@ -16,12 +16,12 @@ fn mknodat1() {
         mknodat(*fd, "a", c::S_IFCHR | MODE, DEV).unwrap();
         let stat = stat(&path).unwrap();
         assert_eq!(stat.st_rdev, DEV);
-        assert_eq!(stat.st_mode & c::S_IFMT, DEV);
+        assert_eq!(stat.st_mode & c::S_IFMT, c::S_IFCHR);
         metadata(path.as_path()).unwrap().permissions().mode() & 0o777
     };
 
     umask(0);
-    assert_eq!(f(), MODE);
+    assert_eq!(f() as c::dev_t, MODE);
     umask(0o077);
-    assert_eq!(f(), 0o700);
+    assert_eq!(f() as c::dev_t, 0o700);
 }

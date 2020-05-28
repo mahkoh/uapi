@@ -368,7 +368,7 @@ fn metadata2() {
     let path = &*format!("{}/a", tmp);
     let path3 = &*format!("{}/c", tmp);
 
-    let tmpdir = open(tmp.bstr(), c::O_PATH, 0).unwrap();
+    let tmpdir = open(tmp.bstr(), c::O_RDONLY, 0).unwrap();
     let file = open(path, c::O_CREAT | c::O_RDONLY, 0).unwrap();
     assert!(fdatasync(*file).is_ok());
 
