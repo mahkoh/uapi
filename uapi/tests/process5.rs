@@ -23,6 +23,9 @@ fn process5() {
             let (pid, status) = waitpid(n, c::WCONTINUED).unwrap();
             assert_eq!(pid, n);
             assert_eq!(WIFEXITED(status), false);
+            #[cfg(target_os = "freebsd")]
+            assert_eq!(WIFSIGNALED(status), true);
+            #[cfg(not(target_os = "freebsd"))]
             assert_eq!(WIFSIGNALED(status), false);
             assert_eq!(WIFSTOPPED(status), false);
             assert_eq!(WIFCONTINUED(status), true);
