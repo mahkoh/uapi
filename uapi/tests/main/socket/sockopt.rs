@@ -27,7 +27,7 @@ fn on_off() {
     switch(*socket, setsockopt_so_timestamp, getsockopt_so_timestamp);
     #[cfg(any(target_os = "android", target_os = "linux"))]
     switch(*socket, setsockopt_so_passcred, getsockopt_so_passcred);
-    #[cfg(not(target_os = "freebsd"))]
+    #[cfg(not(any(target_os = "freebsd", target_os = "openbsd")))]
     switch(*socket, setsockopt_ip_pktinfo, getsockopt_ip_pktinfo);
 }
 

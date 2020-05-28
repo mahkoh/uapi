@@ -143,18 +143,6 @@ fn read_write2() {
     assert_eq!(buf0, [0; 10]);
     assert_eq!(&buf1, output);
     assert_eq!(&buf2, testtesttest);
-
-    truncate(&path, 0).unwrap();
-
-    let xstat = fstat(*fd).unwrap();
-    assert_eq!(xstat.st_size, 0);
-
-    posix_fallocate(*fd, 1, 1).unwrap();
-
-    let xstat = fstat(*fd).unwrap();
-    assert_eq!(xstat.st_size, 2);
-
-    assert!(posix_fadvise(*fd, 0, 0, 0).is_ok());
 }
 
 #[test]
