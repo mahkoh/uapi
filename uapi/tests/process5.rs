@@ -26,13 +26,19 @@ fn process5() {
             // https://github.com/rust-lang/libc/issues/1782
             #[cfg(not(target_os = "freebsd"))]
             assert_eq!(WIFSIGNALED(status), false);
+            // https://github.com/rust-lang/libc/issues/1784
+            #[cfg(not(target_os = "openbsd"))]
             assert_eq!(WIFSTOPPED(status), false);
             assert_eq!(WIFCONTINUED(status), true);
 
             let (pid, status) = waitpid(n, 0).unwrap();
             assert_eq!(pid, n);
             assert_eq!(WIFEXITED(status), true);
+            // https://github.com/rust-lang/libc/issues/1782
+            #[cfg(not(target_os = "freebsd"))]
             assert_eq!(WIFSIGNALED(status), false);
+            // https://github.com/rust-lang/libc/issues/1784
+            #[cfg(not(target_os = "openbsd"))]
             assert_eq!(WIFSTOPPED(status), false);
             assert_eq!(WIFCONTINUED(status), false);
             assert_eq!(WEXITSTATUS(status), 1);
