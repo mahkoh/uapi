@@ -1,5 +1,7 @@
 #![allow(deprecated)]
 
+extern crate proc; // https://github.com/rust-lang/rust/issues/64450
+
 mod dir;
 mod errno;
 mod fcntl;

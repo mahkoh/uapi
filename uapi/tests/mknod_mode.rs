@@ -1,3 +1,5 @@
+extern crate proc; // https://github.com/rust-lang/rust/issues/64450
+
 use proc::*;
 use std::{fs::metadata, os::unix::fs::PermissionsExt};
 use testutils::*;

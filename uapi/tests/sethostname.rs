@@ -1,3 +1,5 @@
+extern crate proc; // https://github.com/rust-lang/rust/issues/64450
+
 #[cfg(target_os = "linux")]
 mod wrapper {
     use proc::*;

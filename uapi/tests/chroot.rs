@@ -1,3 +1,5 @@
+extern crate proc; // https://github.com/rust-lang/rust/issues/64450
+
 use proc::*;
 use testutils::*;
 use uapi::*;
