@@ -28,7 +28,7 @@ fn linger() {
 
     let mut linger: c::linger = pod_zeroed();
     getsockopt(*socket, c::SOL_SOCKET, c::SO_LINGER, &mut linger).unwrap();
-    assert_eq!(linger.l_onoff, 1);
+    assert_ne!(linger.l_onoff, 0);
 
     let linger = c::linger {
         l_onoff: 0,
