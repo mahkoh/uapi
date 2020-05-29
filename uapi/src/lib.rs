@@ -5,6 +5,8 @@
 //!
 //! NOTE: The crate documentation is in the `docs` module.
 
+extern crate proc; // https://github.com/rust-lang/rust/issues/64450
+
 pub use crate::{
     dir::*, errno::*, fcntl::*, fd::*, file::*, ioctl::*, mount::*, other::*, pod::*,
     poll::*, process::*, result::*, signal::*, socket::*, ustr::*, util::*,
