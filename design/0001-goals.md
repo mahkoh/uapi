@@ -2,11 +2,7 @@
 
 ## Status
 
-Accepted
-
-##### History
-
-2020-05-28 - Accepted
+2020-05-28 - Active
 
 ## Context
 
