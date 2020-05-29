@@ -7,5 +7,5 @@ edition = "2018"
 [dependencies]
 uapi = { path = "../uapi" }
 tempfile = "3.0.5"
-proc = { path = "../uapi-proc"}
+proc = { package = "uapi-proc", path = "../uapi-proc" }
 cfg-if = "0.1"

@@ -1,12 +1,12 @@
 use crate::*;
-use std::{marker::PhantomData, mem};
+use std::{marker::PhantomData, mem, mem::ManuallyDrop, ops::Deref};
 
 /// Marker trait for Pod types
 ///
 /// This is not a general Pod type and only supposed to be used for interaction with this
-/// library.
+/// crate.
 ///
-/// See also the library documentation.
+/// See also the crate documentation.
 ///
 /// # Safety
 ///
@@ -143,6 +143,7 @@ imp_pod! {
     c::flock
     c::timespec
     c::timeval
+    c::linger
 
     OwnedFd
     Fd
@@ -166,6 +167,8 @@ imp_pod! {
 imp_pod! {
     c::ucred
     c::in_pktinfo
+    c::ip_mreq
+    c::ip_mreqn
 }
 
 /// Marker trait for types without padding
@@ -208,4 +211,79 @@ pub fn as_bytes<T: Packed + ?Sized>(t: &T) -> &[u8] {
         let ptr = t as *const _ as *const u8;
         std::slice::from_raw_parts(ptr, mem::size_of_val(t))
     }
+}
+
+/// Transparent wrapper that asserts that a type is `Pod`
+#[repr(transparent)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
+pub struct AssertPod<T: ?Sized>(ManuallyDrop<T>);
+
+impl<T: ?Sized> AssertPod<T> {
+    /// Wraps a `&mut T`
+    ///
+    /// # Safety
+    ///
+    /// `T` must follow the `Pod` contract.
+    pub unsafe fn new(t: &mut T) -> &mut Self {
+        &mut *(t as *mut T as *mut AssertPod<T>)
+    }
+}
+
+impl<T> AssertPod<T> {
+    /// Unwraps the contained object
+    ///
+    /// # Safety
+    ///
+    /// `T` must follow the `Pod` contract.
+    pub unsafe fn unwrap(self) -> T {
+        ManuallyDrop::into_inner(self.0)
+    }
+}
+
+unsafe impl<T: ?Sized> Pod for AssertPod<T> {
+}
+
+/// Transparent wrapper that asserts that a type is `Packed`
+#[repr(transparent)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
+pub struct AssertPacked<T: ?Sized>(T);
+
+impl<T: ?Sized> AssertPacked<T> {
+    /// Wraps a `&T`
+    ///
+    /// # Safety
+    ///
+    /// `T` must follow the `Packed` contract.
+    pub unsafe fn new(t: &T) -> &Self {
+        &*(t as *const T as *const AssertPacked<T>)
+    }
+}
+
+unsafe impl<T: ?Sized> Packed for AssertPacked<T> {
+}
+
+impl<T: ?Sized> Deref for AssertPacked<T> {
+    type Target = T;
+
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+
+/// Asserts that `T` is `Pod`
+///
+/// # Safety
+///
+/// `T` must follow the `Pod` contract.
+pub unsafe fn assert_pod<T: ?Sized>(t: &mut T) -> &mut AssertPod<T> {
+    AssertPod::new(t)
+}
+
+/// Asserts that `T` is `Packed`
+///
+/// # Safety
+///
+/// `T` must follow the `Packed` contract.
+pub unsafe fn assert_packed<T: ?Sized>(t: &T) -> &AssertPacked<T> {
+    AssertPacked::new(t)
 }

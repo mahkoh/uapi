@@ -164,7 +164,7 @@ fn cmsg1() {
     let (a, b) = socketpair(c::AF_UNIX, c::SOCK_DGRAM, 0).unwrap();
 
     #[cfg(any(target_os = "android", target_os = "linux"))]
-    setsockopt_so_passcred(*b, 1).unwrap();
+    setsockopt(*b, c::SOL_SOCKET, c::SO_PASSCRED, &1i32).unwrap();
 
     {
         let mut buf = [0; 128];

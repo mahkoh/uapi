@@ -62,6 +62,19 @@ pub(crate) fn black_box<T: ?Sized>(ptr: *const T) {
     }
 }
 
+/// Returns the argument
+///
+/// However:
+///
+/// 1. If the argument was derived from a mutable reference, the compiler cannot
+///    assume anything about the value of the pointed-to object after the call.
+/// 2. The compiler does not know anything about the origin of the returned pointer.
+///
+/// This implementation currently works but should be replaced by a compiler intrinsic.
+pub(crate) fn black_box_id<T>(ptr: *const T) -> *mut T {
+    unsafe { uapi_black_box(ptr as *const _) as *mut _ }
+}
+
 /// Returns `Err(Errno(c::EINVAL))`
 pub(crate) const fn einval<T>() -> Result<T> {
     Err(Errno(c::EINVAL))

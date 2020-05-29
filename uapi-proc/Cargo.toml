@@ -1,8 +1,11 @@
 [package]
-name = "proc"
+name = "uapi-proc"
 version = "0.0.0"
 authors = ["Julian Orth <ju.orth@gmail.com>"]
 edition = "2018"
+description = "Internal macros for the uapi crate. DO NOT USE!"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/mahkoh/uapi"
 
 [lib]
 proc-macro = true

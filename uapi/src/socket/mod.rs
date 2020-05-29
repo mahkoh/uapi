@@ -222,7 +222,7 @@ pub fn sockaddr_none_mut<'a>() -> Option<&'a mut c::sockaddr> {
     None
 }
 
-/// Rusty version of a mutable `c::sockaddr`
+/// Rusty version of a mutable `c::msghdr`
 ///
 /// Use `sockaddr_none_mut` to avoid type inference errors
 pub struct MsghdrMut<'a, 'b, 'c, 'd, T: SockAddr + ?Sized = c::sockaddr> {
@@ -233,6 +233,9 @@ pub struct MsghdrMut<'a, 'b, 'c, 'd, T: SockAddr + ?Sized = c::sockaddr> {
 }
 
 #[man(recvmsg(2))]
+///
+/// If the function returns successfully, `msghdr.control` has been replaced by the part
+/// filled with control messages.
 pub fn recvmsg<T: SockAddr + ?Sized>(
     sockfd: c::c_int,
     msghdr: &mut MsghdrMut<T>,
@@ -271,7 +274,7 @@ pub fn recvmsg<T: SockAddr + ?Sized>(
     Ok((res as usize, c_msghdr.msg_namelen as usize))
 }
 
-/// Rusty version of an immutable `c::sockaddr`
+/// Rusty version of an immutable `c::msghdr`
 ///
 /// Use `sockaddr_none_ref` to avoid type inference errors
 pub struct Msghdr<'a, T: SockAddr + ?Sized> {

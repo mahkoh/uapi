@@ -1,12 +1,5 @@
 use uapi::*;
 
-cfg_if::cfg_if! {
-    if #[cfg(target_os = "linux")] {
-        mod linux;
-        pub use linux::*;
-    }
-}
-
 #[test]
 fn sigset() {
     let mut set = empty_sig_set().unwrap();
