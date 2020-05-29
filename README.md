@@ -1,5 +1,8 @@
 # Unix API
 
+[![crates.io](https://img.shields.io/crates/v/uapi.svg)](http://crates.io/crates/uapi)
+[![docs.rs](https://docs.rs/uapi/badge.svg)](http://docs.rs/uapi)
+
 This crate contains safe wrappers around Unix APIs.
 
 ## Supported Targets
