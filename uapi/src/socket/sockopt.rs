@@ -1,5 +1,5 @@
 use crate::*;
-use std::{TryInto, mem};
+use std::{convert::TryInto, mem};
 
 #[man(getsockopt(2))]
 pub fn getsockopt<T: Pod + ?Sized>(
