@@ -21,3 +21,30 @@ The goals of the crate should be clearly documented.
 6. It should be possible to use the wrappers with 0 overhead.
 7. Resources should be managed via RAII.
 8. Differences between operating systems should not be unified.
+
+## Consequences
+
+By 3, all wrappers will be available in the crate root.
+
+By 3 and 4, wrapper types will be avoided if possible. By 2, exceptions will be
+made if the underlying data structures cannot be used safely.
+
+By 4, there will be no enums in the API. Flag parameters will have the same type
+as the underlying parameter.
+
+By 5, wrappers of APIs that accept strings accept all of Rust's string types
+such as `str`, `[u8]`, `CStr`, `Path`, `OsStr`, etc. By 6, no allocations must
+be performed for `CStr` arguments.
+
+By 5, custom string types will be added to make working with non-UTF-8 and
+C-style strings easier.
+
+By 5, traits will be added to make conversions between binary data and structs
+easier.
+
+By 7, APIs that return new file descriptors return a wrapper that closes the
+file descriptor upon drop.
+
+By 8, APIs that are only available on some operating systems will not be
+emulated on other operating systems. For example, macOS has a time API that is
+different from the POSIX `clock_*` family of functions.
