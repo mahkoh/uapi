@@ -6,7 +6,7 @@ edition = "2018"
 description = "Wrappers for OS APIs on UNIX-like platform"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/mahkoh/uapi"
-keywords = ["unix", "linux", "macos", "osx", "android", "bsd", "freebsd"]
+keywords = ["unix", "linux", "macos", "osx", "bsd"]
 categories = ["os::unix-apis"]
 readme = "../README.md"
 
