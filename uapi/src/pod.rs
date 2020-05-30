@@ -215,7 +215,7 @@ pub fn as_bytes<T: Packed + ?Sized>(t: &T) -> &[u8] {
 
 /// Transparent wrapper that asserts that a type is `Pod`
 #[repr(transparent)]
-#[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
+#[derive(Copy)]
 pub struct AssertPod<T: ?Sized>(ManuallyDrop<T>);
 
 impl<T: ?Sized> AssertPod<T> {
@@ -226,6 +226,12 @@ impl<T: ?Sized> AssertPod<T> {
     /// `T` must follow the `Pod` contract.
     pub unsafe fn new(t: &mut T) -> &mut Self {
         &mut *(t as *mut T as *mut AssertPod<T>)
+    }
+}
+
+impl<T: Copy> Clone for AssertPod<T> {
+    fn clone(&self) -> Self {
+        *self
     }
 }
 
