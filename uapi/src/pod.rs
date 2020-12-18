@@ -108,6 +108,12 @@ fn pod_write_common_prefix<T: Pod + ?Sized, U: Packed + ?Sized>(
 unsafe impl<T: Pod> Pod for [T] {
 }
 
+unsafe impl<T> Pod for *const T {
+}
+
+unsafe impl<T> Pod for *mut T {
+}
+
 macro_rules! imp_pod {
     ($($path:path)*) => {
         $(unsafe impl Pod for $path {})*
@@ -179,6 +185,12 @@ imp_pod! {
 pub unsafe trait Packed {}
 
 unsafe impl<T: Packed> Packed for [T] {
+}
+
+unsafe impl<T> Packed for *const T {
+}
+
+unsafe impl<T> Packed for *mut T {
 }
 
 macro_rules! imp_packed {
