@@ -141,16 +141,6 @@ pub const RWF_SYNC: c::c_int = 0x00000004;
 pub const RWF_NOWAIT: c::c_int = 0x00000008;
 pub const RWF_APPEND: c::c_int = 0x00000010;
 
-// https://github.com/rust-lang/libc/issues/1783
-#[cfg(target_env = "musl")]
-#[derive(Copy, Clone)]
-#[repr(C)]
-pub struct ip_mreqn {
-    pub imr_multiaddr: c::in_addr,
-    pub imr_address: c::in_addr,
-    pub imr_ifindex: c::c_int,
-}
-
 #[derive(Copy, Clone)]
 #[repr(C)]
 pub struct ifinfomsg {

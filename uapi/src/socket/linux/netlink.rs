@@ -1,11 +1,10 @@
-use crate::*;
+use crate::{socket::linux::netlink::sealed::Sealed, *};
+use proc::{beta};
 use std::{
     convert::{TryFrom, TryInto},
     mem,
     mem::MaybeUninit,
 };
-use crate::socket::linux::netlink::sealed::Sealed;
-use proc::{man, beta};
 
 const ALIGN: usize = 4 - 1;
 
@@ -74,7 +73,10 @@ pub trait NlmsgHeaderExt: NlmsgHeader + Sealed {
     /// Reads a header plus payload from a netlink message
     ///
     /// Returns the space consumed, the header, and the payload.
-    fn read<'a>(buf: &mut &'a [u8]) -> Result<(usize, Self, &'a [u8])> where Self: Pod {
+    fn read<'a>(buf: &mut &'a [u8]) -> Result<(usize, Self, &'a [u8])>
+    where
+        Self: Pod,
+    {
         nlmsg_read_header(buf)
     }
 }
@@ -354,7 +356,7 @@ mod test {
                 ifi_type: 0,
                 ifi_index: 0,
                 ifi_flags: 0,
-                ifi_change: 0
+                ifi_change: 0,
             })?;
             {
                 let mut attr = writer.nest(c::nlattr {
