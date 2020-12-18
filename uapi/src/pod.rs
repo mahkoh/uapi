@@ -167,6 +167,9 @@ imp_pod! {
     c::sockaddr_ll
     c::sockaddr_vm
     c::signalfd_siginfo
+    c::nlmsghdr
+    c::nlattr
+    c::ifinfomsg
 }
 
 #[cfg(not(any(target_os = "macos", target_os = "freebsd", target_os = "openbsd")))]

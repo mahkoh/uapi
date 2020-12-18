@@ -1,5 +1,9 @@
 use crate::*;
 
+pub use netlink::*;
+
+mod netlink;
+
 #[man(accept4(2))]
 pub fn accept4<T: Pod + ?Sized>(
     sockfd: c::c_int,

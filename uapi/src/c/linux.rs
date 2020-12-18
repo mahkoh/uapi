@@ -150,3 +150,22 @@ pub struct ip_mreqn {
     pub imr_address: c::in_addr,
     pub imr_ifindex: c::c_int,
 }
+
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub struct ifinfomsg {
+    pub ifi_family: c::c_uchar,
+    pub ifi_type: c::c_ushort,
+    pub ifi_index: c::c_int,
+    pub ifi_flags: c::c_uint,
+    pub ifi_change: c::c_uint,
+}
+
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub struct sockaddr_nl {
+    pub nl_family: c::sa_family_t,
+    pub nl_pad: c::c_ushort,
+    pub nl_pid: u32,
+    pub nl_groups: u32,
+}
