@@ -1,10 +1,6 @@
 use crate::*;
 use cfg_if::cfg_if;
-use std::{
-    convert::TryInto,
-    io::{IoSlice, IoSliceMut},
-    mem, ptr,
-};
+use std::{convert::TryInto, mem, ptr};
 
 pub use cmsg::*;
 pub use sockopt::*;
@@ -147,23 +143,34 @@ pub fn getpeername<T: SockAddr + ?Sized>(
 }
 
 #[man(recv(2))]
-pub fn recv(sockfd: c::c_int, buf: &mut [u8], flags: c::c_int) -> Result<usize> {
-    let res = unsafe { c::recv(sockfd, buf as *mut _ as *mut _, buf.len(), flags) };
-    map_err!(res).map(|v| v as usize)
+pub fn recv<T: Pod + ?Sized>(
+    sockfd: c::c_int,
+    buf: &mut T,
+    flags: c::c_int,
+) -> Result<&mut [u8]> {
+    unsafe {
+        let buf = as_maybe_uninit_bytes_mut2(buf);
+        let res = c::recv(sockfd, buf as *mut _ as *mut _, buf.len(), flags);
+        let len = map_err!(res)? as usize;
+        Ok(buf[..len].slice_assume_init_mut())
+    }
 }
 
 #[man(recvfrom(2))]
-pub fn recvfrom<T: SockAddr + ?Sized>(
+///
+/// Returns the message bytes and the size of the address.
+pub fn recvfrom<'a, B: Pod + ?Sized, A: SockAddr + ?Sized>(
     sockfd: c::c_int,
-    buf: &mut [u8],
+    buf: &'a mut B,
     flags: c::c_int,
-    addr: &mut T,
-) -> Result<(usize, usize)> {
+    addr: &mut A,
+) -> Result<(&'a mut [u8], usize)> {
+    let buf = unsafe { as_maybe_uninit_bytes_mut2(buf) };
     let mut addrlen = to_addrlen(addr)?;
     let res = unsafe {
         c::recvfrom(
             sockfd,
-            buf as *mut _ as *mut _,
+            black_box_id(buf as *mut _ as *mut _),
             buf.len(),
             flags,
             addr as *mut _ as *mut _,
@@ -171,26 +178,36 @@ pub fn recvfrom<T: SockAddr + ?Sized>(
         )
     };
     black_box(addr);
-    map_err!(res).map(|v| (v as usize, addrlen as _))
+    let res = map_err!(res)? as usize;
+    unsafe { Ok((buf[..res].slice_assume_init_mut(), addrlen as _)) }
 }
 
 #[man(send(2))]
-pub fn send(sockfd: c::c_int, buf: &[u8], flags: c::c_int) -> Result<usize> {
-    let res = unsafe { c::send(sockfd, buf as *const _ as *const _, buf.len(), flags) };
+pub fn send<T: ?Sized>(sockfd: c::c_int, buf: &T, flags: c::c_int) -> Result<usize> {
+    let buf = as_maybe_uninit_bytes(buf);
+    let res = unsafe {
+        c::send(
+            sockfd,
+            black_box_id(buf as *const _ as *const _),
+            buf.len(),
+            flags,
+        )
+    };
     map_err!(res).map(|v| v as usize)
 }
 
 #[man(sendto(2))]
-pub fn sendto<T: SockAddr + ?Sized>(
+pub fn sendto<T: ?Sized, A: SockAddr + ?Sized>(
     sockfd: c::c_int,
-    buf: &[u8],
+    buf: &T,
     flags: c::c_int,
-    addr: &T,
+    addr: &A,
 ) -> Result<usize> {
+    let buf = as_maybe_uninit_bytes(buf);
     let res = unsafe {
         c::sendto(
             sockfd,
-            buf as *const _ as *const _,
+            black_box_id(buf as *const _ as *const _),
             buf.len(),
             flags,
             addr as *const _ as *const _,
@@ -222,88 +239,112 @@ pub fn sockaddr_none_mut<'a>() -> Option<&'a mut c::sockaddr> {
     None
 }
 
+/// Returns `Option::<&[u8]>::None`
+///
+/// This is useful for functions or structures which are generic over the control message
+/// type and whose type cannot be inferred if `None` is used on its own.
+pub fn msghdr_control_none_ref<'a>() -> Option<&'a [u8]> {
+    None
+}
+
+/// Returns `Option::<&mut [u8]>::None`
+///
+/// This is useful for functions or structures which are generic over the control message
+/// type and whose type cannot be inferred if `None` is used on its own.
+pub fn msghdr_control_none_mut<'a>() -> Option<&'a mut [u8]> {
+    None
+}
+
 /// Rusty version of a mutable `c::msghdr`
 ///
 /// Use `sockaddr_none_mut` to avoid type inference errors
-pub struct MsghdrMut<'a, 'b, 'c, 'd, T: SockAddr + ?Sized = c::sockaddr> {
-    pub iov: &'b mut [IoSliceMut<'a>],
-    pub control: Option<&'c mut [u8]>,
+pub struct MsghdrMut<
+    'b,
+    'c,
+    'd,
+    D: MaybeUninitIovecMut + ?Sized,
+    C: Pod + ?Sized + 'c,
+    T: SockAddr + ?Sized = c::sockaddr,
+> {
+    pub iov: &'b mut D,
+    pub control: Option<&'c mut C>,
     pub name: Option<&'d mut T>,
     pub flags: c::c_int,
 }
 
 #[man(recvmsg(2))]
 ///
-/// If the function returns successfully, `msghdr.control` has been replaced by the part
-/// filled with control messages.
-pub fn recvmsg<T: SockAddr + ?Sized>(
+/// Returns the message, the size of the address, and the control message.
+pub fn recvmsg<
+    'b,
+    'c,
+    D: MaybeUninitIovecMut + ?Sized,
+    C: Pod + ?Sized,
+    T: SockAddr + ?Sized,
+>(
     sockfd: c::c_int,
-    msghdr: &mut MsghdrMut<T>,
+    msghdr: &mut MsghdrMut<'b, 'c, '_, D, C, T>,
     flags: c::c_int,
-) -> Result<(usize, usize)> {
+) -> Result<(InitializedIovec<'b>, usize, &'c [u8])> {
     let mut sockaddr_len = 0;
     let (sockaddr_ptr, _) = opt_to_sockaddr_mut(&mut msghdr.name, &mut sockaddr_len)?;
+    let iov = unsafe { ptr::read(&msghdr.iov).as_iovec_mut() };
 
     let mut c_msghdr: c::msghdr = pod_zeroed();
-    c_msghdr.msg_iov = msghdr.iov.as_mut_ptr() as *mut _;
-    c_msghdr.msg_iovlen = msghdr.iov.len().try_into().unwrap_or(Integer::MAX_VALUE);
-    c_msghdr.msg_control = msghdr
-        .control
-        .as_mut()
-        .map(|b| b.as_mut_ptr() as *mut _)
-        .unwrap_or(ptr::null_mut());
-    c_msghdr.msg_controllen = msghdr
-        .control
-        .as_ref()
-        .map(|b| b.len())
-        .unwrap_or(0)
-        .try_into()
-        .unwrap_or(Integer::MAX_VALUE);
+    c_msghdr.msg_iov = black_box_id(iov.as_mut_ptr() as *mut _);
+    c_msghdr.msg_iovlen = iov.len().try_into().unwrap_or(Integer::MAX_VALUE);
+    if let Some(ref mut c) = msghdr.control {
+        c_msghdr.msg_control = black_box_id(*c as *mut _ as *mut _);
+        c_msghdr.msg_controllen = mem::size_of_val(*c)
+            .try_into()
+            .unwrap_or(Integer::MAX_VALUE);
+    }
     c_msghdr.msg_name = sockaddr_ptr as *mut _;
     c_msghdr.msg_namelen = sockaddr_len;
 
     let res = unsafe { c::recvmsg(sockfd, &mut c_msghdr, flags) };
     map_err!(res)?;
 
-    if let Some(control) = msghdr.control.as_mut() {
-        *control =
-            &mut mem::replace(control, &mut [])[..c_msghdr.msg_controllen as usize];
-    }
+    let ctrl = match msghdr.control {
+        Some(ref mut c) => unsafe {
+            as_maybe_uninit_bytes_mut2(ptr::read(c))[..c_msghdr.msg_controllen as usize]
+                .slice_assume_init_mut()
+        },
+        _ => &mut [],
+    };
     msghdr.flags = c_msghdr.msg_flags;
 
-    Ok((res as usize, c_msghdr.msg_namelen as usize))
+    let iov = unsafe { InitializedIovec::new(iov, res as usize) };
+
+    Ok((iov, c_msghdr.msg_namelen as usize, ctrl))
 }
 
 /// Rusty version of an immutable `c::msghdr`
 ///
 /// Use `sockaddr_none_ref` to avoid type inference errors
-pub struct Msghdr<'a, T: SockAddr + ?Sized> {
-    pub iov: &'a [IoSlice<'a>],
-    pub control: Option<&'a [u8]>,
+pub struct Msghdr<'a, D: MaybeUninitIovec + ?Sized, C: ?Sized, T: SockAddr + ?Sized> {
+    pub iov: &'a D,
+    pub control: Option<&'a C>,
     pub name: Option<&'a T>,
 }
 
 #[man(sendmsg(2))]
-pub fn sendmsg<'a, T: SockAddr + ?Sized>(
+pub fn sendmsg<'a, D: MaybeUninitIovec + ?Sized, C: ?Sized, A: SockAddr + ?Sized>(
     sockfd: c::c_int,
-    msghdr: &'a Msghdr<'a, T>,
+    msghdr: &'a Msghdr<'a, D, C, A>,
     flags: c::c_int,
 ) -> Result<usize> {
     let (sockaddr_ptr, sockaddr_len) = opt_to_sockaddr(msghdr.name)?;
+    let iov = msghdr.iov.as_iovec();
 
     let mut c_msghdr: c::msghdr = pod_zeroed();
-    c_msghdr.msg_iov = msghdr.iov.as_ptr() as *mut _;
-    c_msghdr.msg_iovlen = msghdr.iov.len().try_into().unwrap_or(Integer::MAX_VALUE);
-    c_msghdr.msg_control = msghdr
-        .control
-        .map(|b| b.as_ptr() as *mut _)
-        .unwrap_or(ptr::null_mut());
-    c_msghdr.msg_controllen = msghdr
-        .control
-        .map(|b| b.len())
-        .unwrap_or(0)
-        .try_into()
-        .unwrap_or(Integer::MAX_VALUE);
+    c_msghdr.msg_iov = black_box_id(iov.as_ptr() as *mut _);
+    c_msghdr.msg_iovlen = iov.len().try_into().unwrap_or(Integer::MAX_VALUE);
+    if let Some(c) = msghdr.control {
+        c_msghdr.msg_control = black_box_id(c as *const _ as *mut _);
+        c_msghdr.msg_controllen =
+            mem::size_of_val(c).try_into().unwrap_or(Integer::MAX_VALUE);
+    }
     c_msghdr.msg_name = sockaddr_ptr as *mut _;
     c_msghdr.msg_namelen = sockaddr_len;
 

@@ -58,7 +58,7 @@ fn pipe2_() {
 
     write(*w, &[1]).unwrap();
     let mut buf = [0];
-    read(*r, &mut buf).unwrap();
+    read(*r, &mut buf[..]).unwrap();
     assert_eq!(buf[0], 1);
 }
 

@@ -1,10 +1,6 @@
 use crate::*;
 use cfg_if::cfg_if;
-use std::{
-    convert::TryFrom,
-    io::{IoSlice, IoSliceMut},
-    mem::MaybeUninit,
-};
+use std::{convert::TryFrom, mem, mem::MaybeUninit, slice};
 
 cfg_if! {
     if #[cfg(target_os = "linux")] {
@@ -48,34 +44,56 @@ pub fn close(fd: OwnedFd) -> Result<()> {
 }
 
 #[man(read(2))]
-pub fn read(fd: c::c_int, buf: &mut [u8]) -> Result<usize> {
-    let val = unsafe { c::read(fd, buf.as_mut_ptr() as *mut _, buf.len()) };
-    map_err!(val).map(|v| v as usize)
+pub fn read<T: Pod + ?Sized>(fd: c::c_int, buf: &mut T) -> Result<&mut [u8]> {
+    unsafe {
+        let buf = as_maybe_uninit_bytes_mut2(buf);
+        let val = c::read(fd, buf.as_mut_ptr() as *mut _, buf.len());
+        let val = map_err!(val)? as usize;
+        Ok(buf[..val].slice_assume_init_mut())
+    }
 }
 
 #[man(readv(2))]
-pub fn readv(fd: c::c_int, bufs: &mut [IoSliceMut<'_>]) -> Result<usize> {
-    let len = i32::try_from(bufs.len()).unwrap_or(i32::max_value());
-    let val = unsafe { c::readv(fd, bufs.as_mut_ptr() as *mut _, len) };
-    map_err!(val).map(|v| v as usize)
+pub fn readv<T: MaybeUninitIovecMut + ?Sized>(
+    fd: c::c_int,
+    bufs: &mut T,
+) -> Result<InitializedIovec> {
+    unsafe {
+        let bufs = bufs.as_iovec_mut();
+        let len = i32::try_from(bufs.len()).unwrap_or(i32::max_value());
+        let val = c::readv(fd, bufs.as_mut_ptr() as *mut _, len);
+        let val = map_err!(val)? as usize;
+        Ok(InitializedIovec::new(bufs, val))
+    }
 }
 
 #[man(pread(2))]
-pub fn pread(fd: c::c_int, buf: &mut [u8], offset: c::off_t) -> Result<usize> {
-    let val = unsafe { c::pread(fd, buf.as_mut_ptr() as *mut _, buf.len(), offset) };
-    map_err!(val).map(|v| v as usize)
+pub fn pread<T: Pod + ?Sized>(
+    fd: c::c_int,
+    buf: &mut T,
+    offset: c::off_t,
+) -> Result<&[u8]> {
+    unsafe {
+        let val = c::pread(fd, buf as *mut _ as *mut _, mem::size_of_val(buf), offset);
+        let len = map_err!(val)? as usize;
+        Ok(slice::from_raw_parts(buf as *const _ as *const _, len))
+    }
 }
 
 #[man(preadv(2))]
 #[cfg(not(target_os = "macos"))]
-pub fn preadv(
+pub fn preadv<T: MaybeUninitIovecMut + ?Sized>(
     fd: c::c_int,
-    bufs: &mut [IoSliceMut<'_>],
+    bufs: &mut T,
     offset: c::off_t,
-) -> Result<usize> {
-    let len = i32::try_from(bufs.len()).unwrap_or(i32::max_value());
-    let val = unsafe { c::preadv(fd, bufs.as_mut_ptr() as *mut _, len, offset) };
-    map_err!(val).map(|v| v as usize)
+) -> Result<InitializedIovec> {
+    unsafe {
+        let bufs = bufs.as_iovec_mut();
+        let len = i32::try_from(bufs.len()).unwrap_or(i32::max_value());
+        let val = c::preadv(fd, bufs.as_mut_ptr() as *mut _, len, offset);
+        let val = map_err!(val)? as usize;
+        Ok(InitializedIovec::new(bufs, val))
+    }
 }
 
 #[man(dup(2))]
@@ -91,29 +109,45 @@ pub fn dup2(old: c::c_int, new: c::c_int) -> Result<c::c_int> {
 }
 
 #[man(write(2))]
-pub fn write(fd: c::c_int, buf: &[u8]) -> Result<usize> {
-    let val = unsafe { c::write(fd, buf.as_ptr() as *const _, buf.len()) };
+pub fn write<T: ?Sized>(fd: c::c_int, buf: &T) -> Result<usize> {
+    let buf = as_maybe_uninit_bytes(buf);
+    let val = unsafe { c::write(fd, black_box_id(buf.as_ptr()) as *const _, buf.len()) };
     map_err!(val).map(|v| v as usize)
 }
 
 #[man(pwrite(2))]
-pub fn pwrite(fd: c::c_int, buf: &[u8], offset: c::off_t) -> Result<usize> {
-    let val = unsafe { c::pwrite(fd, buf.as_ptr() as *const _, buf.len(), offset) };
+pub fn pwrite<T: ?Sized>(fd: c::c_int, buf: &T, offset: c::off_t) -> Result<usize> {
+    let buf = as_maybe_uninit_bytes(buf);
+    let val = unsafe {
+        c::pwrite(
+            fd,
+            black_box_id(buf.as_ptr()) as *const _,
+            buf.len(),
+            offset,
+        )
+    };
     map_err!(val).map(|v| v as usize)
 }
 
 #[man(writev(2))]
-pub fn writev(fd: c::c_int, bufs: &[IoSlice<'_>]) -> Result<usize> {
+pub fn writev<T: MaybeUninitIovec + ?Sized>(fd: c::c_int, bufs: &T) -> Result<usize> {
+    let bufs = bufs.as_iovec();
     let len = i32::try_from(bufs.len()).unwrap_or(i32::max_value());
-    let val = unsafe { c::writev(fd, bufs.as_ptr() as *const _, len) };
+    let val = unsafe { c::writev(fd, black_box_id(bufs.as_ptr()) as *const _, len) };
     map_err!(val).map(|v| v as usize)
 }
 
 #[man(pwritev(2))]
 #[cfg(not(target_os = "macos"))]
-pub fn pwritev(fd: c::c_int, bufs: &[IoSlice<'_>], offset: c::off_t) -> Result<usize> {
+pub fn pwritev<T: MaybeUninitIovec + ?Sized>(
+    fd: c::c_int,
+    bufs: &T,
+    offset: c::off_t,
+) -> Result<usize> {
+    let bufs = bufs.as_iovec();
     let len = i32::try_from(bufs.len()).unwrap_or(i32::max_value());
-    let val = unsafe { c::pwritev(fd, bufs.as_ptr() as *const _, len, offset) };
+    let val =
+        unsafe { c::pwritev(fd, black_box_id(bufs.as_ptr()) as *const _, len, offset) };
     map_err!(val).map(|v| v as usize)
 }
 
@@ -138,24 +172,36 @@ pub fn mknodat<'a>(
 }
 
 #[man(readlink(2))]
-pub fn readlink<'a>(path: impl IntoUstr<'a>, buf: &mut [u8]) -> Result<usize> {
+pub fn readlink<'a, 'b, T: Pod + ?Sized>(
+    path: impl IntoUstr<'a>,
+    buf: &'b mut T,
+) -> Result<&'b mut [u8]> {
     let path = path.into_ustr();
-    let val =
-        unsafe { c::readlink(path.as_ptr(), buf.as_mut_ptr() as *mut _, buf.len()) };
-    map_err!(val).map(|e| e as usize)
+    unsafe {
+        let buf = as_maybe_uninit_bytes_mut2(buf);
+        let val = c::readlink(
+            path.as_ptr(),
+            buf.as_mut_ptr() as *mut _,
+            buf.len(),
+        );
+        let val = map_err!(val)? as usize;
+        Ok(buf[..val].slice_assume_init_mut())
+    }
 }
 
 #[man(readlinkat(2))]
-pub fn readlinkat<'a>(
+pub fn readlinkat<'a, 'b, T: Pod + ?Sized>(
     fd: c::c_int,
     path: impl IntoUstr<'a>,
-    buf: &mut [u8],
-) -> Result<usize> {
+    buf: &'b mut T,
+) -> Result<&'b mut [u8]> {
     let path = path.into_ustr();
-    let val = unsafe {
-        c::readlinkat(fd, path.as_ptr(), buf.as_mut_ptr() as *mut _, buf.len())
-    };
-    map_err!(val).map(|e| e as usize)
+    unsafe {
+        let buf = as_maybe_uninit_bytes_mut2(buf);
+        let val = c::readlinkat(fd, path.as_ptr(), buf.as_mut_ptr() as *mut _, buf.len());
+        let val = map_err!(val)? as usize;
+        Ok(buf[..val].slice_assume_init_mut())
+    }
 }
 
 #[man(fstatat(2))]

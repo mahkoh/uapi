@@ -114,12 +114,15 @@ pub fn fexecve(fd: c::c_int, argv: &UstrPtr, envp: &UstrPtr) -> Result<()> {
 }
 
 #[man(getcwd(3))]
-pub fn getcwd(buf: &mut [u8]) -> Result<&CStr> {
-    let res = unsafe { c::getcwd(buf.as_mut_ptr() as *mut _, buf.len()) };
-    if res.is_null() {
-        Err(Errno::default())
-    } else {
-        Ok(unsafe { CStr::from_ptr(res) })
+pub fn getcwd<T: Pod + ?Sized>(buf: &mut T) -> Result<&CStr> {
+    unsafe {
+        let buf = as_maybe_uninit_bytes_mut2(buf);
+        let res = c::getcwd(buf.as_mut_ptr() as *mut _, buf.len());
+        if res.is_null() {
+            Err(Errno::default())
+        } else {
+            Ok(CStr::from_ptr(res))
+        }
     }
 }
 
@@ -298,40 +301,40 @@ pub fn kill(pid: c::pid_t, sig: c::c_int) -> Result<()> {
 }
 #[man(wait(2))]
 pub fn WEXITSTATUS(s: c::c_int) -> c::c_int {
-    unsafe { c::WEXITSTATUS(s) }
+    c::WEXITSTATUS(s)
 }
 
 #[man(wait(2))]
 pub fn WTERMSIG(s: c::c_int) -> c::c_int {
-    unsafe { c::WTERMSIG(s) }
+    c::WTERMSIG(s)
 }
 
 #[man(wait(2))]
 pub fn WSTOPSIG(s: c::c_int) -> c::c_int {
-    unsafe { c::WSTOPSIG(s) }
+    c::WSTOPSIG(s)
 }
 
 #[man(wait(2))]
 pub fn WIFEXITED(s: c::c_int) -> bool {
-    unsafe { c::WIFEXITED(s) }
+    c::WIFEXITED(s)
 }
 
 #[man(wait(2))]
 pub fn WIFSTOPPED(s: c::c_int) -> bool {
-    unsafe { c::WIFSTOPPED(s) }
+    c::WIFSTOPPED(s)
 }
 
 #[man(wait(2))]
 pub fn WIFSIGNALED(s: c::c_int) -> bool {
-    unsafe { c::WIFSIGNALED(s) }
+    c::WIFSIGNALED(s)
 }
 
 #[man(wait(2))]
 pub fn WIFCONTINUED(s: c::c_int) -> bool {
-    unsafe { c::WIFCONTINUED(s) }
+    c::WIFCONTINUED(s)
 }
 
 #[man(wait(2))]
 pub fn WCOREDUMP(s: c::c_int) -> bool {
-    unsafe { c::WCOREDUMP(s) }
+    c::WCOREDUMP(s)
 }

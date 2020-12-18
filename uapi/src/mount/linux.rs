@@ -1,5 +1,5 @@
 use crate::*;
-use std::{convert::TryFrom, ptr};
+use std::{convert::TryFrom, mem::MaybeUninit, ptr};
 
 #[man(mount(2))]
 pub fn mount<'a, 'b, 'c, 'd>(
@@ -7,18 +7,21 @@ pub fn mount<'a, 'b, 'c, 'd>(
     target: impl IntoUstr<'b>,
     fstype: impl IntoUstr<'c>,
     flags: c::c_ulong,
-    data: Option<&'d [u8]>,
+    data: Option<&'d [MaybeUninit<u8>]>,
 ) -> Result<()> {
     let src = src.into_ustr();
     let target = target.into_ustr();
     let fstype = fstype.into_ustr();
+    let data = data
+        .map(|d| black_box_id(d.as_ptr()) as *const _)
+        .unwrap_or(ptr::null());
     let res = unsafe {
         c::mount(
             src.as_ptr(),
             target.as_ptr(),
             fstype.as_ptr_null(),
             flags,
-            data.map(|d| d.as_ptr() as *const _).unwrap_or(ptr::null()),
+            data,
         )
     };
     map_err!(res).map(drop)
@@ -100,12 +103,13 @@ pub fn fsconfig_set_string<'a, 'b>(
 }
 
 /// [`fsconfig(2)`](https://github.com/torvalds/linux/blob/v5.6/fs/fsopen.c#L271-L320) with cmd = `FSCONFIG_SET_BINARY`
-pub fn fsconfig_set_binary<'a>(
+pub fn fsconfig_set_binary<'a, T: ?Sized>(
     fs_fd: c::c_int,
     key: impl IntoUstr<'a>,
-    value: &[u8],
+    value: &T,
 ) -> Result<()> {
     let key = key.into_ustr();
+    let value = as_maybe_uninit_bytes(value);
     let len = match c::c_int::try_from(value.len()) {
         Ok(len) => len,
         Err(_) => return Err(Errno(c::EINVAL)),
@@ -115,7 +119,7 @@ pub fn fsconfig_set_binary<'a>(
             fs_fd,
             c::FSCONFIG_SET_BINARY,
             key.as_ptr(),
-            value.as_ptr() as *const c::c_void,
+            black_box_id(value.as_ptr()) as *const c::c_void,
             len,
         )
     };

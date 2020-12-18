@@ -1,5 +1,9 @@
 #![allow(deprecated)]
 #![allow(clippy::or_fun_call)]
+// https://github.com/rust-lang/rust-clippy/issues/6466
+#![allow(clippy::useless_conversion)]
+// https://github.com/rust-lang/rust-clippy/issues/6372
+#![allow(clippy::transmute_ptr_to_ptr)]
 
 //! Unix API crate
 //!
@@ -9,7 +13,7 @@ extern crate proc; // https://github.com/rust-lang/rust/issues/64450
 
 pub use crate::{
     dir::*, errno::*, fcntl::*, fd::*, file::*, ioctl::*, mount::*, other::*, pod::*,
-    poll::*, process::*, result::*, signal::*, socket::*, ustr::*, util::*,
+    poll::*, process::*, result::*, signal::*, socket::*, uninit::*, ustr::*, util::*,
 };
 
 use proc::*;
@@ -33,5 +37,6 @@ mod process;
 mod result;
 mod signal;
 mod socket;
+mod uninit;
 mod ustr;
 mod util;

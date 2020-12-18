@@ -2,6 +2,7 @@ use crate::*;
 use std::{
     convert::{TryFrom, TryInto},
     mem,
+    mem::MaybeUninit,
 };
 
 #[cfg(any(target_os = "dragonfly", target_os = "macos", target_os = "ios"))]
@@ -98,7 +99,7 @@ pub fn cmsg_read<'a>(buf: &mut &'a [u8]) -> Result<(usize, c::cmsghdr, &'a [u8])
 ///
 /// See also the crate documentation.
 pub fn cmsg_write<T: ?Sized>(
-    buf: &mut &mut [u8],
+    buf: &mut &mut [MaybeUninit<u8>],
     mut hdr: c::cmsghdr,
     data: &T,
 ) -> Result<usize> {
@@ -116,7 +117,6 @@ pub fn cmsg_write<T: ?Sized>(
         ptr.copy_from_nonoverlapping(&hdr as *const _ as *const _, HDR_SIZE);
         ptr.add(HDR_SPACE)
             .copy_from_nonoverlapping(data as *const _ as *const _, data_size);
-        black_box(ptr);
     }
     *buf = &mut mem::replace(buf, &mut [])[cmsg_space..];
     Ok(cmsg_space)

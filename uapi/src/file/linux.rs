@@ -1,13 +1,5 @@
 use crate::*;
-use std::{
-    convert::TryFrom,
-    ffi::CStr,
-    io::{IoSlice, IoSliceMut},
-    mem,
-    mem::MaybeUninit,
-    ops::Deref,
-    ptr,
-};
+use std::{convert::TryFrom, ffi::CStr, mem, mem::MaybeUninit, ops::Deref, ptr};
 
 #[man(copy_file_range(2))]
 pub fn copy_file_range(
@@ -112,12 +104,12 @@ pub fn inotify_rm_watch(fd: c::c_int, wd: c::c_int) -> Result<()> {
 }
 
 /// Reads from an inotify file descriptor and returns an iterator over the results
-pub fn inotify_read(
+pub fn inotify_read<T: Pod + ?Sized>(
     fd: c::c_int,
-    buf: &mut [u8],
+    buf: &mut T,
 ) -> Result<impl IntoIterator<Item = InotifyEvent>> {
     let res = read(fd, buf)?;
-    Ok(InotifyIter(&buf[..res]))
+    Ok(InotifyIter(res))
 }
 
 struct InotifyIter<'a>(&'a [u8]);
@@ -247,12 +239,13 @@ pub fn fstatfs(fd: c::c_int) -> Result<c::statfs> {
 }
 
 #[man(preadv2(2))]
-pub fn preadv2(
+pub fn preadv2<T: MaybeUninitIovecMut + ?Sized>(
     fd: c::c_int,
-    bufs: &mut [IoSliceMut<'_>],
+    bufs: &mut T,
     offset: c::loff_t,
     flags: c::c_int,
-) -> Result<usize> {
+) -> Result<InitializedIovec> {
+    let bufs = unsafe { bufs.as_iovec_mut() };
     let len = i32::try_from(bufs.len()).unwrap_or(i32::max_value());
     let val = unsafe {
         c::syscall(
@@ -265,22 +258,24 @@ pub fn preadv2(
             flags as usize,
         )
     };
-    map_err!(val).map(|v| v as usize)
+    let val = map_err!(val)? as usize;
+    unsafe { Ok(InitializedIovec::new(bufs, val)) }
 }
 
 #[man(pwritev2(2))]
-pub fn pwritev2(
+pub fn pwritev2<T: MaybeUninitIovec + ?Sized>(
     fd: c::c_int,
-    bufs: &[IoSlice<'_>],
+    bufs: &T,
     offset: c::loff_t,
     flags: c::c_int,
 ) -> Result<usize> {
+    let bufs = bufs.as_iovec();
     let len = i32::try_from(bufs.len()).unwrap_or(i32::max_value());
     let val = unsafe {
         c::syscall(
             c::SYS_pwritev2,
             fd as usize,
-            bufs.as_ptr() as *const c::iovec as usize,
+            black_box_id(bufs.as_ptr()) as *const c::iovec as usize,
             len as usize,
             offset as usize,
             usize_right_shift!(offset) as usize,

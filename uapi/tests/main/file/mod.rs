@@ -1,6 +1,9 @@
 use cfg_if::cfg_if;
 use proc::*;
-use std::io::{IoSlice, IoSliceMut};
+use std::{
+    io::{IoSlice, IoSliceMut},
+    mem::MaybeUninit,
+};
 use testutils::*;
 use uapi::*;
 
@@ -20,7 +23,7 @@ fn read_write() {
     let fd = open(&path, c::O_CREAT | c::O_WRONLY, 0o777).unwrap();
     let fd2 = openat(*open(&tmp, c::O_RDONLY, 0).unwrap(), "a", c::O_RDONLY, 0).unwrap();
 
-    let output = b"hello world";
+    let output = "hello world";
     assert_eq!(write(*fd, output).unwrap(), 11);
 
     let pos = lseek(*fd, 0, c::SEEK_CUR).unwrap();
@@ -33,40 +36,35 @@ fn read_write() {
     assert_eq!(11, xstat.st_size);
     assert_eq!(stat(&path).unwrap().st_ino, xstat.st_ino);
 
-    let mut buf = [0; 11];
-    assert_eq!(read(*fd2, &mut buf).unwrap(), 11);
-
-    assert_eq!(buf, *output);
+    let mut buf = [MaybeUninit::<u8>::uninit(); 11];
+    assert_eq!(read(*fd2, &mut buf[..]).unwrap(), output.as_bytes());
 
     ftruncate(*fd, 0).unwrap();
 
     let xstat = fstat(*fd).unwrap();
     assert_eq!(0, xstat.st_size);
 
-    writev(*fd, &[IoSlice::new(output)]).unwrap();
+    writev(*fd, &[IoSlice::new(output.as_bytes())][..]).unwrap();
 
     let xstat = fstat(*fd).unwrap();
     assert_eq!(11, xstat.st_size);
 
     lseek(*fd, 0, c::SEEK_SET).unwrap();
 
-    let testtesttest = b"testtesttest";
+    let testtesttest = "testtesttest";
     assert_eq!(pwrite(*fd, testtesttest, 11).unwrap(), 12);
 
     lseek(*fd2, 0, c::SEEK_SET).unwrap();
 
-    let mut buf1 = [0; 11];
-    let mut buf2 = [0; 11];
+    let mut buf1 = [MaybeUninit::<u8>::uninit(); 11];
+    let mut buf2 = [MaybeUninit::uninit(); 11];
 
-    let rd = readv(
-        *fd2,
-        &mut [IoSliceMut::new(&mut buf1), IoSliceMut::new(&mut buf2)],
-    )
-    .unwrap();
-    assert_eq!(rd, 22);
+    let mut iovec = [&mut buf1[..], &mut buf2];
+    let mut rd = readv(*fd2, &mut iovec[..]).unwrap().into_iter();
 
-    assert_eq!(&buf1, output);
-    assert_eq!(&buf2, b"testtesttes");
+    assert_eq!(rd.next(), Some(output.as_bytes()));
+    assert_eq!(rd.next(), Some("testtesttes".as_bytes()));
+    assert_eq!(rd.next(), None);
 
     assert_eq!(close(OwnedFd::new(-1)), Err(Errno(c::EBADF)));
 
@@ -79,10 +77,12 @@ fn read_write() {
 
     lseek(*fd2, 0, c::SEEK_SET).unwrap();
 
-    let mut buf = [0; 12];
+    let mut buf = [0u8; 12];
 
-    assert_eq!(pread(*fd2, &mut buf, 11).unwrap(), 12);
-    assert_eq!(&buf, testtesttest);
+    assert_eq!(
+        pread(*fd2, &mut buf[..], 11).unwrap(),
+        testtesttest.as_bytes()
+    );
 }
 
 #[test]
@@ -107,10 +107,11 @@ fn read_write2() {
     assert_eq!(
         preadv(
             *fd,
-            &mut [IoSliceMut::new(&mut buf1), IoSliceMut::new(&mut buf2)],
+            &mut [IoSliceMut::new(&mut buf1), IoSliceMut::new(&mut buf2)][..],
             1
         )
-        .unwrap(),
+        .unwrap()
+        .len(),
         22
     );
     assert_eq!(&buf1, b"ello world");
@@ -119,7 +120,12 @@ fn read_write2() {
     truncate(&path, 0).unwrap();
 
     assert_eq!(
-        pwritev(*fd, &[IoSlice::new(output), IoSlice::new(testtesttest)], 10).unwrap(),
+        pwritev(
+            *fd,
+            &[IoSlice::new(output), IoSlice::new(testtesttest)][..],
+            10
+        )
+        .unwrap(),
         23
     );
 
@@ -134,10 +140,11 @@ fn read_write2() {
                 IoSliceMut::new(&mut buf0),
                 IoSliceMut::new(&mut buf1),
                 IoSliceMut::new(&mut buf2)
-            ],
+            ][..],
             0
         )
-        .unwrap(),
+        .unwrap()
+        .len(),
         33
     );
     assert_eq!(buf0, [0; 10]);
@@ -178,8 +185,7 @@ fn metadata1() {
 
     let mut buf = [0; 128];
 
-    let size = readlink(path2, &mut buf).unwrap();
-    assert_eq!(path.as_bytes(), &buf[..size]);
+    assert_eq!(readlink(path2, &mut buf[..]).unwrap(), path.as_bytes());
 
     assert!(access(path2, 0).is_ok());
     unlink(path2).unwrap();
@@ -190,8 +196,10 @@ fn metadata1() {
 
     let mut buf = [0; 128];
 
-    let size = readlinkat(*tmpdir, "b", &mut buf).unwrap();
-    assert_eq!(path.as_bytes(), &buf[..size]);
+    assert_eq!(
+        readlinkat(*tmpdir, "b", &mut buf[..]).unwrap(),
+        path.as_bytes()
+    );
 
     let xstat = fstatat(*tmpdir, "b", c::AT_SYMLINK_NOFOLLOW).unwrap();
     assert_eq!(xstat.st_mode & c::S_IFMT, c::S_IFLNK);

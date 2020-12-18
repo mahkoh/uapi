@@ -32,13 +32,13 @@ pub fn strace<T, F: FnOnce() -> T>(trace: bool, f: F) -> T {
         let mut strace =
             open("strace", c::O_WRONLY | c::O_TRUNC | c::O_CREAT, 0o777).unwrap();
         let mut pipe = || loop {
-            let res = read(*stderr, &mut buf);
+            let res = read(*stderr, &mut buf[..]);
             match res {
-                Ok(0) => break,
+                Ok(buf) if buf.is_empty() => break,
                 Err(Errno(c::EAGAIN)) => break,
-                Ok(n) => {
+                Ok(buf) => {
                     // std::io::Write::write_all(&mut Fd::new(2), &buf[..n]).unwrap();
-                    std::io::Write::write_all(&mut strace, &buf[..n]).unwrap();
+                    std::io::Write::write_all(&mut strace, buf).unwrap();
                     if !notified_parent {
                         notified_parent = true;
                         eventfd_write(*start_efd_copy, 1).unwrap();

@@ -25,6 +25,11 @@ architectures (arm, aarch64, etc.) will probably also work.
 A crate which contains only safe code and which only uses safe APIs from this
 crate and libstd is, as a whole, safe.
 
+## Future changes
+
+This crate fully supports reading into uninitialized buffers but the API will
+most likely change when the same functionality becomes stable in libstd.
+
 ## Comparison with other crates
 
 ### libc

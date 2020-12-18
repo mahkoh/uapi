@@ -1,7 +1,9 @@
 use std::{
     collections::HashSet,
     io::{IoSlice, IoSliceMut, Write},
-    mem, thread,
+    mem,
+    mem::MaybeUninit,
+    thread,
 };
 use testutils::*;
 use uapi::*;
@@ -65,10 +67,9 @@ fn socket1() {
     assert!(addr_size <= mem::size_of::<c::sockaddr_un>());
     cmp_addr_un(&accepted_client_addr, &client_addr);
 
-    let mut buf = [0; 128];
-    let len = recv(*client, &mut buf, 0).unwrap();
-    assert_eq!(len, 11);
-    assert_eq!(&buf[..11], b"hello world");
+    let mut buf = [0u8; 128];
+    let buf = recv(*client, &mut buf[..], 0).unwrap();
+    assert_eq!(buf, b"hello world");
     client.write_all(b"hol up").unwrap();
     shutdown(*client, c::SHUT_WR).unwrap();
 
@@ -99,8 +100,8 @@ fn socket2() {
         let client = socket(c::AF_UNIX, c::SOCK_DGRAM, 0).unwrap();
         bind(*client, &client_addr).unwrap();
         let msghdr = Msghdr {
-            iov: &[IoSlice::new(b"hello world")],
-            control: None,
+            iov: &[IoSlice::new(b"hello world")][..],
+            control: msghdr_control_none_ref(),
             name: Some(&server_addr),
         };
         sendmsg(*client, &msghdr, 0).unwrap();
@@ -110,14 +111,15 @@ fn socket2() {
         let mut buf = [0; 128];
         let mut accepted_client_addr: c::sockaddr_un = pod_zeroed();
         let mut msghdr = MsghdrMut {
-            iov: &mut [IoSliceMut::new(&mut buf)],
-            control: None,
+            iov: &mut [IoSliceMut::new(&mut buf)][..],
+            control: msghdr_control_none_mut(),
             name: Some(&mut accepted_client_addr),
             flags: 0,
         };
-        let (buflen, addr_size) = recvmsg(*server, &mut msghdr, 0).unwrap();
-        assert_eq!(buflen, 11);
-        assert_eq!(&buf[..11], b"hello world");
+        let (buf, addr_size, _) = recvmsg(*server, &mut msghdr, 0).unwrap();
+        let mut buf = buf.iter();
+        assert_eq!(buf.next(), Some("hello world".as_bytes()));
+        assert_eq!(buf.next(), None);
         assert!(addr_size <= mem::size_of::<c::sockaddr_un>());
         cmp_addr_un(&accepted_client_addr, &client_addr);
     }
@@ -131,12 +133,11 @@ fn socket2() {
     }
 
     {
-        let mut buf = [0; 128];
+        let mut buf = [MaybeUninit::<u8>::uninit(); 128];
         let mut accepted_client_addr: c::sockaddr_un = pod_zeroed();
-        let (buflen, addr_size) =
-            recvfrom(*server, &mut buf, 0, &mut accepted_client_addr).unwrap();
-        assert_eq!(buflen, 3);
-        assert_eq!(&buf[..3], b"ayo");
+        let (buf, addr_size) =
+            recvfrom(*server, &mut buf[..], 0, &mut accepted_client_addr).unwrap();
+        assert_eq!(buf, b"ayo");
         assert!(addr_size <= mem::size_of::<c::sockaddr_un>());
         cmp_addr_un(&accepted_client_addr, &client_addr);
     }
@@ -167,7 +168,7 @@ fn cmsg1() {
     setsockopt(*b, c::SOL_SOCKET, c::SO_PASSCRED, &1i32).unwrap();
 
     {
-        let mut buf = [0; 128];
+        let mut buf = [MaybeUninit::uninit(); 128];
         let len = {
             let mut buf = &mut buf[..];
 
@@ -186,7 +187,7 @@ fn cmsg1() {
         };
 
         let msghdr = Msghdr {
-            iov: &[IoSlice::new(b"hello world")],
+            iov: &[IoSlice::new(b"hello world")][..],
             control: Some(&buf[..len]),
             name: sockaddr_none_ref(),
         };
@@ -197,18 +198,17 @@ fn cmsg1() {
         let mut data_buf = [0; 128];
         let mut cmsg_buf = [0; 128];
         let mut msghdr = MsghdrMut {
-            iov: &mut [IoSliceMut::new(&mut data_buf)],
-            control: Some(&mut cmsg_buf),
+            iov: &mut [IoSliceMut::new(&mut data_buf)][..],
+            control: Some(&mut cmsg_buf[..]),
             name: sockaddr_none_mut(),
             flags: 0,
         };
 
-        let (data_len, _) = recvmsg(*b, &mut msghdr, 0).unwrap();
+        let (data, _, mut cmsg) = recvmsg(*b, &mut msghdr, 0).unwrap();
+        let mut data = data.iter();
 
-        let mut cmsg: &[u8] = msghdr.control.take().unwrap();
-
-        assert_eq!(data_len, 11);
-        assert_eq!(&data_buf[..11], b"hello world");
+        assert_eq!(data.next(), Some("hello world".as_bytes()));
+        assert_eq!(data.next(), None);
 
         assert!(cmsg.len() > 0);
 

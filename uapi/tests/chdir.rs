@@ -1,3 +1,4 @@
+use std::mem::MaybeUninit;
 use testutils::*;
 use uapi::*;
 
@@ -6,8 +7,8 @@ fn chdir1() {
     let tmp = Tempdir::new();
     let tmpdir = &std::fs::canonicalize(tmp.bstr()).unwrap();
 
-    let mut buf1 = [0; 1024];
-    let old = getcwd(&mut buf1).unwrap();
+    let mut buf1 = [MaybeUninit::<u8>::uninit(); 1024];
+    let old = getcwd(&mut buf1[..]).unwrap();
 
     chdir(&tmp).unwrap();
 

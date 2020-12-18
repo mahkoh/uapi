@@ -2,6 +2,7 @@ use std::{
     borrow::Borrow,
     convert::{TryFrom, TryInto},
     ffi::{CStr, CString, OsStr, OsString},
+    mem::MaybeUninit,
     path::{Path, PathBuf},
 };
 use uapi::*;
@@ -155,7 +156,7 @@ fn ustring() {
         unsafe {
             us.with_unused(|b| {
                 assert!(b.len() >= 31);
-                b[0] = b'1';
+                b[0] = MaybeUninit::new(b'1');
                 Ok(1)
             })
             .unwrap();
@@ -164,7 +165,7 @@ fn ustring() {
         assert_eq!(&us, "1");
         unsafe {
             let _ = us.with_unused(|b| {
-                (0..b.len()).for_each(|i| b[i] = 1);
+                (0..b.len()).for_each(|i| b[i] = MaybeUninit::new(1));
                 Err(Errno(0))
             });
         }

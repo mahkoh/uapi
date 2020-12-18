@@ -1,19 +1,20 @@
-use std::mem;
+use std::{mem, mem::MaybeUninit};
 use uapi::*;
 
 #[test]
 fn test() {
-    let mut buf = [0; 1024];
+    let mut buf = [MaybeUninit::uninit(); 1024];
     let hdr = pod_zeroed::<c::cmsghdr>();
+    let mut written = 0;
 
     {
         let mut buf = &mut buf[..];
 
-        cmsg_write(&mut buf, hdr, b"hello world").unwrap();
-        cmsg_write(&mut buf, hdr, b"ayo hol up").unwrap();
+        written += cmsg_write(&mut buf, hdr, b"hello world").unwrap();
+        written += cmsg_write(&mut buf, hdr, b"ayo hol up").unwrap();
     }
 
-    let mut buf = &buf[..];
+    let mut buf = unsafe { buf[..written].slice_assume_init_ref() };
 
     let (_, _, data1) = cmsg_read(&mut buf).unwrap();
     let (_, _, data2) = cmsg_read(&mut buf).unwrap();

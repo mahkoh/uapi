@@ -1,5 +1,11 @@
 use crate::*;
-use std::{marker::PhantomData, mem, mem::ManuallyDrop, ops::Deref};
+use std::{
+    marker::PhantomData,
+    mem,
+    mem::{ManuallyDrop, MaybeUninit},
+    ops::Deref,
+    slice,
+};
 
 /// Marker trait for Pod types
 ///
@@ -108,10 +114,17 @@ fn pod_write_common_prefix<T: Pod + ?Sized, U: Packed + ?Sized>(
 unsafe impl<T: Pod> Pod for [T] {
 }
 
+// TODO: https://github.com/rust-lang/rust/pull/79135
+// unsafe impl<T: Pod, const N: usize> Pod for [T; N] {
+// }
+
 unsafe impl<T> Pod for *const T {
 }
 
 unsafe impl<T> Pod for *mut T {
+}
+
+unsafe impl<T> Pod for MaybeUninit<T> {
 }
 
 macro_rules! imp_pod {
@@ -190,6 +203,10 @@ pub unsafe trait Packed {}
 unsafe impl<T: Packed> Packed for [T] {
 }
 
+// TODO: https://github.com/rust-lang/rust/pull/79135
+// unsafe impl<T: Packed, const N: usize> Packed for [T; N] {
+// }
+
 unsafe impl<T> Packed for *const T {
 }
 
@@ -224,7 +241,7 @@ imp_packed! {
 pub fn as_bytes<T: Packed + ?Sized>(t: &T) -> &[u8] {
     unsafe {
         let ptr = t as *const _ as *const u8;
-        std::slice::from_raw_parts(ptr, mem::size_of_val(t))
+        slice::from_raw_parts(ptr, mem::size_of_val(t))
     }
 }
 

@@ -7,35 +7,24 @@ pub fn eventfd(initval: c::c_uint, flags: c::c_int) -> Result<OwnedFd> {
     map_err!(res).map(OwnedFd::new)
 }
 
-#[repr(C)]
-union EventFdUnion {
-    num: u64,
-    buf: [u8; 8],
-}
-
 /// Reads from an eventfd file descriptor
 pub fn eventfd_read(fd: c::c_int) -> Result<u64> {
-    unsafe {
-        let mut buf = EventFdUnion { num: 0 };
-        let res = read(fd, &mut buf.buf)?;
-        if res < 8 {
-            Err(Errno(c::EBADF))
-        } else {
-            Ok(buf.num)
-        }
+    let mut num = 0;
+    let res = read(fd, &mut num)?.len();
+    if res < 8 {
+        Err(Errno(c::EBADF))
+    } else {
+        Ok(num)
     }
 }
 
 /// Writes to an eventfd file descriptor
 pub fn eventfd_write(fd: c::c_int, num: u64) -> Result<()> {
-    unsafe {
-        let buf = EventFdUnion { num };
-        let res = write(fd, &buf.buf)?;
-        if res < 8 {
-            Err(Errno(c::EBADF))
-        } else {
-            Ok(())
-        }
+    let res = write(fd, &num)?;
+    if res < 8 {
+        Err(Errno(c::EBADF))
+    } else {
+        Ok(())
     }
 }
 

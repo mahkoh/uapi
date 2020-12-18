@@ -1,6 +1,6 @@
 use crate::*;
 use cfg_if::cfg_if;
-use std::{convert::TryInto, ffi::CStr, mem::MaybeUninit, ops::Deref};
+use std::{convert::TryInto, ffi::CStr, mem::MaybeUninit, ops::Deref, ptr};
 
 cfg_if! {
     if #[cfg(target_os = "linux")] {
@@ -89,7 +89,7 @@ pub fn sethostname(buf: &[u8]) -> Result<()> {
 /// This function returns `libc::ENAMETOOLONG` if the hostname does not fit in the supplied
 /// buffer. If the hostname is longer than 255 bytes (excluding the nul byte), then this
 /// function always returns `libc::ENAMETOOLONG`.
-pub fn gethostname(buf: &mut [u8]) -> Result<&CStr> {
+pub fn gethostname<T: Pod + ?Sized>(buf: &mut T) -> Result<&CStr> {
     // Posix implies: If gethostname returns without an error then
     // - if the buffer does not contain a nul byte then the hostname was truncated
     // - if the buffer contains a nul byte in the last place then the hostname was
@@ -107,6 +107,7 @@ pub fn gethostname(buf: &mut [u8]) -> Result<&CStr> {
     // gethostname returns. If the first nul byte in the buffer is that very byte, then
     // we assume that there was a truncation and return an error.
     unsafe {
+        let buf = as_maybe_uninit_bytes_mut2(buf);
         const SIZE: usize = 257;
         let mut inner = MaybeUninit::<[u8; SIZE]>::uninit();
         let res = c::gethostname(inner.as_mut_ptr() as *mut _, SIZE);
@@ -115,8 +116,14 @@ pub fn gethostname(buf: &mut [u8]) -> Result<&CStr> {
         let cstr = CStr::from_ptr(inner.as_ptr() as *mut c::c_char);
         let bytes = cstr.to_bytes_with_nul();
         if bytes.len() < SIZE && bytes.len() <= buf.len() {
-            buf[..bytes.len()].copy_from_slice(bytes);
-            Ok(CStr::from_bytes_with_nul_unchecked(&buf[..bytes.len()]))
+            ptr::copy_nonoverlapping(
+                bytes.as_ptr(),
+                buf.as_mut_ptr() as *mut _,
+                bytes.len(),
+            );
+            Ok(CStr::from_bytes_with_nul_unchecked(
+                buf[..bytes.len()].slice_assume_init_ref(),
+            ))
         } else {
             Err(Errno(c::ENAMETOOLONG))
         }

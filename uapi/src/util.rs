@@ -19,12 +19,15 @@ pub fn read_link_to_ustring<'a>(
         buf.reserve_exact(size);
         let mut retry = false;
         let res = unsafe {
-            buf.with_unused(|buf| match readlinkat(fd, &path, buf) {
-                Ok(n) if n == buf.len() => {
-                    retry = true;
-                    Err(Errno(c::ENAMETOOLONG))
+            buf.with_unused(|buf| {
+                let buf_len = buf.len();
+                match readlinkat(fd, &path, buf) {
+                    Ok(n) if n.len() == buf_len => {
+                        retry = true;
+                        Err(Errno(c::ENAMETOOLONG))
+                    }
+                    r => r.map(|r| r.len()),
                 }
-                r => r,
             })
         };
         if retry && size < c::PATH_MAX as usize {

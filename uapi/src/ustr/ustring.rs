@@ -6,6 +6,7 @@ use std::{
     fmt,
     fmt::{Debug, Formatter},
     mem,
+    mem::MaybeUninit,
     ops::{Deref, DerefMut},
     os::unix::ffi::OsStringExt,
     path::{Path, PathBuf},
@@ -78,24 +79,24 @@ impl Ustring {
     /// - `f` must initialize the slice up to (excluding) the returned index
     pub unsafe fn with_unused<F>(&mut self, f: F) -> Result<usize>
     where
-        F: FnOnce(&mut [u8]) -> Result<usize>,
+        F: FnOnce(&mut [MaybeUninit<u8>]) -> Result<usize>,
     {
         let mut s = mem::replace(self, Ustring::new());
         s.init();
 
         let res = {
             let bytes = slice::from_raw_parts_mut(
-                s.bytes.as_mut_ptr().add(s.bytes.len() - 1),
+                s.bytes.as_mut_ptr().add(s.bytes.len() - 1) as *mut _,
                 s.bytes.capacity() - s.bytes.len() + 1,
             );
             let len = bytes.len();
             let res = f(&mut bytes[..len - 1]);
             match res {
                 Ok(num) => {
-                    bytes[num] = 0;
+                    bytes[num] = MaybeUninit::new(0);
                     s.bytes.set_len(s.bytes.len() + num);
                 }
-                _ => bytes[0] = 0,
+                _ => bytes[0] = MaybeUninit::new(0),
             }
             res
         };

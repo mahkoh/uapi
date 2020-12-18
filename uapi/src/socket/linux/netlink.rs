@@ -1,5 +1,5 @@
 use crate::{socket::linux::netlink::sealed::Sealed, *};
-use proc::{beta};
+use proc::beta;
 use std::{
     convert::{TryFrom, TryInto},
     mem,
@@ -48,6 +48,7 @@ pub fn nlmsg_read<T: Pod>(buf: &mut &[u8]) -> Result<(usize, T)> {
 ///
 /// See also the crate documentation.
 #[beta]
+#[allow(clippy::len_without_is_empty)]
 pub trait NlmsgHeader: Sized {
     /// Returns the length of the padded header + payload
     ///
@@ -146,7 +147,7 @@ fn nlmsg_read_header<'a, H: Pod + NlmsgHeader>(
 /// See also the crate documentation.
 #[beta]
 pub struct NlmsgWriter<'a, H: NlmsgHeader = ()> {
-    buf: &'a mut [u8],
+    buf: &'a mut [MaybeUninit<u8>],
     header: H,
     len: usize,
     parent_len: Option<&'a mut usize>,
@@ -154,12 +155,13 @@ pub struct NlmsgWriter<'a, H: NlmsgHeader = ()> {
 
 impl<'a, H: NlmsgHeader> NlmsgWriter<'a, H> {
     /// Creates a new writer that uses the buffer as backing storage
-    pub fn new(buf: &'a mut [u8], header: H) -> Result<Self> {
+    pub fn new<T: Pod+?Sized>(buf: &'a mut T, header: H) -> Result<Self> {
+        let buf = unsafe { as_maybe_uninit_bytes_mut2(buf) };
         Self::new2(buf, None, header)
     }
 
     fn new2<'b, H2: NlmsgHeader>(
-        buf: &'b mut [u8],
+        buf: &'b mut [MaybeUninit<u8>],
         parent_len: Option<&'b mut usize>,
         header: H2,
     ) -> Result<NlmsgWriter<'b, H2>> {
@@ -240,10 +242,13 @@ impl<'a, H: NlmsgHeader> NlmsgWriter<'a, H> {
     /// Sets the length field of the header to the correct value
     ///
     /// This function returns an error if [`NlmsgHeader::set_len]` fails.
-    pub fn finalize(mut self) -> Result<usize> {
+    pub fn finalize(mut self) -> Result<&'a mut [u8]> {
         let len = self.finalize_mut()?;
+        let buf = self.buf.as_mut_ptr();
         mem::forget(self);
-        Ok(len)
+        unsafe {
+            Ok(std::slice::from_raw_parts_mut(buf, len).slice_assume_init_mut())
+        }
     }
 }
 
@@ -256,6 +261,7 @@ impl<'a, H: NlmsgHeader> Drop for NlmsgWriter<'a, H> {
 #[cfg(test)]
 mod test {
     use crate::*;
+    use std::mem::MaybeUninit;
 
     #[test]
     fn test_client_to_client() -> Result<()> {
@@ -269,9 +275,9 @@ mod test {
         };
         bind(*s1, &addr)?;
         getsockname(*s1, &mut addr)?;
-        let mut buf = [0; 128];
+        let mut buf = [MaybeUninit::<u8>::uninit(); 128];
         let mut writer = NlmsgWriter::new(
-            &mut buf,
+            &mut buf[..],
             c::nlmsghdr {
                 nlmsg_len: 0,
                 nlmsg_type: 1,
@@ -300,10 +306,9 @@ mod test {
                 attr.write("hello world")?;
             }
         }
-        let size = writer.finalize()?;
-        sendto(*s2, &buf[..size], 0, &addr)?;
-        let len = recv(*s1, &mut buf[..], 0)?;
-        let mut reader = &buf[..len];
+        let msg = writer.finalize()?;
+        sendto(*s2, msg, 0, &addr)?;
+        let mut reader = &*recv(*s1, &mut buf[..], 0)?;
         let (_, nlmsghdr, mut payload) = c::nlmsghdr::read(&mut reader)?;
         assert_eq!(nlmsghdr.nlmsg_type, 1);
         assert_eq!(nlmsghdr.nlmsg_flags, 2);
@@ -340,9 +345,9 @@ mod test {
                 nl_groups: 0,
             };
             bind(*socket, &addr)?;
-            let mut buf = [0; 32 * 1024];
+            let mut buf = [MaybeUninit::<u8>::uninit(); 32 * 1024];
             let mut writer = NlmsgWriter::new(
-                &mut buf,
+                &mut buf[..],
                 c::nlmsghdr {
                     nlmsg_len: 0,
                     nlmsg_type: c::RTM_GETLINK,
@@ -365,12 +370,11 @@ mod test {
                 })?;
                 attr.write(&1u32)?;
             }
-            let size = writer.finalize()?;
-            send(*socket, &buf[..size], 0)?;
+            let msg = writer.finalize()?;
+            send(*socket, msg, 0)?;
             let mut found_loopback = false;
             'outer: loop {
-                let len = recv(*socket, &mut buf[..], c::MSG_TRUNC)?;
-                let mut reader = &buf[..len];
+                let mut reader = &*recv(*socket, &mut buf[..], c::MSG_TRUNC)?;
                 while reader.len() > 0 {
                     let (_, header, mut payload) = c::nlmsghdr::read(&mut reader)?;
                     if header.nlmsg_type == c::NLMSG_DONE as _ {

@@ -144,14 +144,14 @@ macro_rules! impl_io {
     ($ty:ident) => {
         impl Read for $ty {
             fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
-                Ok(read(self.raw, buf)?)
+                Ok(read(self.raw, buf)?.len())
             }
 
             fn read_vectored(
                 &mut self,
                 bufs: &mut [IoSliceMut<'_>],
             ) -> std::io::Result<usize> {
-                Ok(readv(self.raw, bufs)?)
+                Ok(readv(self.raw, bufs)?.len())
             }
         }
 

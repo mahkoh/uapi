@@ -29,17 +29,18 @@ fn read_write1() {
     dup3(*file, *f2, c::O_CLOEXEC).unwrap();
     assert_eq!(fcntl_getfd(*f2).unwrap() & c::FD_CLOEXEC, c::FD_CLOEXEC);
 
-    pwritev2(*file, &[IoSlice::new(b"x")], 1, 0).unwrap();
+    pwritev2(*file, &[IoSlice::new(b"x")][..], 1, 0).unwrap();
 
     assert_eq!(std::fs::read_to_string(path1).unwrap(), "axc");
 
-    pwritev2(*file, &[IoSlice::new(b"x")], 1, 0).unwrap();
+    pwritev2(*file, &[IoSlice::new(b"x")][..], 1, 0).unwrap();
 
     assert_eq!(std::fs::read_to_string(path1).unwrap(), "axc");
 
     let mut buf = [0; 128];
-    let num = preadv2(*file, &mut [IoSliceMut::new(&mut buf)], 2, 0).unwrap();
-    assert_eq!(&buf[..num], b"c");
+    let mut iovec = [IoSliceMut::new(&mut buf)];
+    let buf = preadv2(*file, &mut iovec[..], 2, 0).unwrap();
+    assert_eq!(buf.iter().next(), Some(&b"c"[..]));
 
     assert!(statfs(path1).is_ok());
     assert!(fstatfs(*file).is_ok());
@@ -53,11 +54,11 @@ fn read_write2() {
 
     let file = open(path1, c::O_CREAT | c::O_RDWR, 0o777).unwrap();
 
-    pwritev2(*file, &[IoSlice::new(b"a")], 0, 0).unwrap();
+    pwritev2(*file, &[IoSlice::new(b"a")][..], 0, 0).unwrap();
 
     assert_eq!(std::fs::read_to_string(path1).unwrap(), "a");
 
-    pwritev2(*file, &[IoSlice::new(b"x")], 1, c::RWF_APPEND).unwrap();
+    pwritev2(*file, &[IoSlice::new(b"x")][..], 1, c::RWF_APPEND).unwrap();
 
     assert_eq!(std::fs::read_to_string(path1).unwrap(), "ax");
 
@@ -65,7 +66,7 @@ fn read_write2() {
 
     assert_eq!(std::fs::read_to_string(path1).unwrap(), "yx");
 
-    pwritev2(*file, &[IoSlice::new(b"y")], -1, c::RWF_APPEND).unwrap();
+    pwritev2(*file, &[IoSlice::new(b"y")][..], -1, c::RWF_APPEND).unwrap();
 
     assert_eq!(std::fs::read_to_string(path1).unwrap(), "yxy");
 }
@@ -164,11 +165,11 @@ fn inotify() {
     let tmp = Tempdir::new();
     let mut buf = [0; 128];
 
-    assert_eq!(inotify_read(*e, &mut buf).err().unwrap(), Errno(c::EAGAIN));
+    assert_eq!(inotify_read(*e, &mut buf[..]).err().unwrap(), Errno(c::EAGAIN));
 
     let w = inotify_add_watch(*e, tmp.bstr(), c::IN_CREATE).unwrap();
 
-    assert_eq!(inotify_read(*e, &mut buf).err().unwrap(), Errno(c::EAGAIN));
+    assert_eq!(inotify_read(*e, &mut buf[..]).err().unwrap(), Errno(c::EAGAIN));
 
     let path1 = &*format!("{}/a", tmp);
     let path2 = &*format!("{}/b", tmp);
@@ -181,7 +182,7 @@ fn inotify() {
     names.insert(ustr!("a"));
     names.insert(ustr!("b"));
 
-    for ev in inotify_read(*e, &mut buf).unwrap() {
+    for ev in inotify_read(*e, &mut buf[..]).unwrap() {
         assert_eq!(ev.mask, c::IN_CREATE);
         assert_eq!(ev.wd, w);
         assert!(names.remove(ev.name().as_ustr()));
@@ -191,7 +192,7 @@ fn inotify() {
 
     inotify_rm_watch(*e, w).unwrap();
 
-    let events: Vec<InotifyEvent> = inotify_read(*e, &mut buf).unwrap().into_iter().collect();
+    let events: Vec<InotifyEvent> = inotify_read(*e, &mut buf[..]).unwrap().into_iter().collect();
     assert_eq!(events.len(), 1);
 
     assert_eq!(events[0].mask, c::IN_IGNORED);
@@ -199,7 +200,7 @@ fn inotify() {
 
     open(path3, c::O_CREAT | c::O_RDONLY, 0).unwrap();
 
-    assert_eq!(inotify_read(*e, &mut buf).err().unwrap(), Errno(c::EAGAIN));
+    assert_eq!(inotify_read(*e, &mut buf[..]).err().unwrap(), Errno(c::EAGAIN));
 }
 
 #[test]
