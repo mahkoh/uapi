@@ -32,17 +32,19 @@ const fn align(size: usize) -> usize {
 
 const HDR_SIZE: usize = mem::size_of::<c::cmsghdr>();
 
+const HDR_SPACE: usize = align(HDR_SIZE);
+
 #[repr(C)]
 union HdrBytes {
     hdr: c::cmsghdr,
-    bytes: [u8; align(HDR_SIZE)],
+    bytes: [u8; HDR_SPACE],
 }
 
 /// Returns the number of bytes needed to store a cmsg with data-length `data_len`
 ///
 /// See also the crate documentation.
 pub const fn cmsg_space(data_len: usize) -> usize {
-    align(HDR_SIZE) + align(data_len)
+    HDR_SPACE + align(data_len)
 }
 
 /// Reads a cmsg from a buffer
@@ -55,21 +57,21 @@ pub const fn cmsg_space(data_len: usize) -> usize {
 ///
 /// See also the crate documentation.
 pub fn cmsg_read<'a>(buf: &mut &'a [u8]) -> Result<(usize, c::cmsghdr, &'a [u8])> {
-    if buf.len() < align(HDR_SIZE) {
+    if buf.len() < HDR_SPACE {
         return einval();
     }
     let mut hdr_bytes = HdrBytes {
-        bytes: [0; align(HDR_SIZE)],
+        bytes: [0; HDR_SPACE],
     };
     unsafe {
-        hdr_bytes.bytes.copy_from_slice(&buf[..align(HDR_SIZE)]);
+        hdr_bytes.bytes.copy_from_slice(&buf[..HDR_SPACE]);
     }
     let hdr = unsafe { hdr_bytes.hdr };
     let cmsg_len = match usize::try_from(hdr.cmsg_len) {
         Ok(l) => l,
         _ => return einval(),
     };
-    if cmsg_len < align(HDR_SIZE) {
+    if cmsg_len < HDR_SPACE {
         return einval();
     }
     if usize::max_value() - cmsg_len < ALIGN {
@@ -79,7 +81,7 @@ pub fn cmsg_read<'a>(buf: &mut &'a [u8]) -> Result<(usize, c::cmsghdr, &'a [u8])
     if buf.len() < cmsg_space {
         return einval();
     }
-    let data = &buf[align(HDR_SIZE)..cmsg_len];
+    let data = &buf[HDR_SPACE..cmsg_len];
     *buf = &buf[cmsg_space..];
     Ok((cmsg_space, hdr, data))
 }
@@ -105,14 +107,14 @@ pub fn cmsg_write<T: ?Sized>(
     if buf.len() < cmsg_space {
         return einval();
     }
-    hdr.cmsg_len = match (align(HDR_SIZE) + data_size).try_into() {
+    hdr.cmsg_len = match (HDR_SPACE + data_size).try_into() {
         Ok(v) => v,
         Err(_) => return einval(),
     };
     let ptr = buf.as_mut_ptr();
     unsafe {
         ptr.copy_from_nonoverlapping(&hdr as *const _ as *const _, HDR_SIZE);
-        ptr.add(align(HDR_SIZE))
+        ptr.add(HDR_SPACE)
             .copy_from_nonoverlapping(data as *const _ as *const _, data_size);
         black_box(ptr);
     }
