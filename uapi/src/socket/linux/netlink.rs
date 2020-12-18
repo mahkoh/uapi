@@ -155,7 +155,7 @@ pub struct NlmsgWriter<'a, H: NlmsgHeader = ()> {
 
 impl<'a, H: NlmsgHeader> NlmsgWriter<'a, H> {
     /// Creates a new writer that uses the buffer as backing storage
-    pub fn new<T: Pod+?Sized>(buf: &'a mut T, header: H) -> Result<Self> {
+    pub fn new<T: Pod + ?Sized>(buf: &'a mut T, header: H) -> Result<Self> {
         let buf = unsafe { as_maybe_uninit_bytes_mut2(buf) };
         Self::new2(buf, None, header)
     }
@@ -246,9 +246,7 @@ impl<'a, H: NlmsgHeader> NlmsgWriter<'a, H> {
         let len = self.finalize_mut()?;
         let buf = self.buf.as_mut_ptr();
         mem::forget(self);
-        unsafe {
-            Ok(std::slice::from_raw_parts_mut(buf, len).slice_assume_init_mut())
-        }
+        unsafe { Ok(std::slice::from_raw_parts_mut(buf, len).slice_assume_init_mut()) }
     }
 }
 

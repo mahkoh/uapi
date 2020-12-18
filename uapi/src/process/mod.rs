@@ -331,7 +331,11 @@ pub fn WIFSIGNALED(s: c::c_int) -> bool {
 
 #[man(wait(2))]
 pub fn WIFCONTINUED(s: c::c_int) -> bool {
-    c::WIFCONTINUED(s)
+    // https://github.com/rust-lang/libc/issues/2001
+    #[allow(unused_unsafe)]
+    unsafe {
+        c::WIFCONTINUED(s)
+    }
 }
 
 #[man(wait(2))]

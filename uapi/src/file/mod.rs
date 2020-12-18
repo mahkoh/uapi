@@ -179,11 +179,7 @@ pub fn readlink<'a, 'b, T: Pod + ?Sized>(
     let path = path.into_ustr();
     unsafe {
         let buf = as_maybe_uninit_bytes_mut2(buf);
-        let val = c::readlink(
-            path.as_ptr(),
-            buf.as_mut_ptr() as *mut _,
-            buf.len(),
-        );
+        let val = c::readlink(path.as_ptr(), buf.as_mut_ptr() as *mut _, buf.len());
         let val = map_err!(val)? as usize;
         Ok(buf[..val].slice_assume_init_mut())
     }
