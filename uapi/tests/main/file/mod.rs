@@ -1,9 +1,6 @@
 use cfg_if::cfg_if;
 use proc::*;
-use std::{
-    io::{IoSlice, IoSliceMut},
-    mem::MaybeUninit,
-};
+use std::{io::IoSlice, mem::MaybeUninit};
 use testutils::*;
 use uapi::*;
 
@@ -88,7 +85,7 @@ fn read_write() {
 #[test]
 #[cfg(not(target_os = "macos"))]
 fn read_write2() {
-    use std::io::Write;
+    use std::io::{IoSliceMut, Write};
 
     let tmp = Tempdir::new();
 
