@@ -20,11 +20,6 @@ The following targets are supported:
 This crate contains little architecture-specific code. Therefore, other
 architectures (arm, aarch64, etc.) will probably also work.
 
-## Safety Guarantee
-
-A crate which contains only safe code and which only uses safe APIs from this
-crate and libstd is, as a whole, safe.
-
 ## Future changes
 
 This crate fully supports reading into uninitialized buffers but the API will
