@@ -4,6 +4,8 @@ use std::{
     borrow::Cow,
     fmt,
     fmt::{Debug, Display, Formatter},
+    fs::File,
+    io::Read,
     panic::AssertUnwindSafe,
     process::exit,
 };
@@ -82,4 +84,10 @@ pub fn in_fork<F: FnOnce()>(f: F) {
         Ok(_) => exit(0),
         Err(_) => exit(1),
     }
+}
+
+pub fn read_file(mut f: File) -> String {
+    let mut s = String::new();
+    f.read_to_string(&mut s).unwrap();
+    s
 }
