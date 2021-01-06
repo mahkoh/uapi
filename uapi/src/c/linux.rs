@@ -259,3 +259,30 @@ pub const SCHED_FLAG_ALL: u64 = SCHED_FLAG_RESET_ON_FORK
     | SCHED_FLAG_DL_OVERRUN
     | SCHED_FLAG_KEEP_ALL
     | SCHED_FLAG_UTIL_CLAMP;
+
+// http://lists.busybox.net/pipermail/buildroot/2019-May/250043.html
+
+pub unsafe fn sched_getscheduler(pid: pid_t) -> c::c_int {
+    syscall(SYS_sched_getscheduler, pid as usize) as c::c_int
+}
+
+pub unsafe fn sched_setscheduler(
+    pid: pid_t,
+    policy: c_int,
+    param: *const sched_param,
+) -> c::c_int {
+    syscall(
+        SYS_sched_setscheduler,
+        pid as usize,
+        policy as usize,
+        param as usize,
+    ) as c::c_int
+}
+
+pub unsafe fn sched_getparam(pid: pid_t, param: *mut sched_param) -> c_int {
+    syscall(SYS_sched_getparam, pid as usize, param as usize) as c::c_int
+}
+
+pub unsafe fn sched_setparam(pid: pid_t, param: *const sched_param) -> c_int {
+    syscall(SYS_sched_setparam, pid as usize, param as usize) as c::c_int
+}

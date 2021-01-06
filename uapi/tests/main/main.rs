@@ -14,6 +14,7 @@ mod pod;
 mod poll;
 mod process;
 mod result;
+mod sched;
 mod signal;
 mod socket;
 mod ustr;

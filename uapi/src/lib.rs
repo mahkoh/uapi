@@ -13,7 +13,8 @@ extern crate proc; // https://github.com/rust-lang/rust/issues/64450
 
 pub use crate::{
     dir::*, errno::*, fcntl::*, fd::*, file::*, ioctl::*, mount::*, other::*, pod::*,
-    poll::*, process::*, result::*, signal::*, socket::*, uninit::*, ustr::*, util::*,
+    poll::*, process::*, result::*, sched::*, signal::*, socket::*, uninit::*, ustr::*,
+    util::*,
 };
 
 use proc::*;
@@ -35,6 +36,7 @@ mod pod;
 mod poll;
 mod process;
 mod result;
+mod sched;
 mod signal;
 mod socket;
 mod uninit;
