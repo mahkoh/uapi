@@ -200,7 +200,7 @@ dependencies = [
 
 [[package]]
 name = "uapi"
-version = "0.2.0"
+version = "0.2.1"
 dependencies = [
  "cc",
  "cfg-if 0.1.10",
@@ -212,7 +212,7 @@ dependencies = [
 
 [[package]]
 name = "uapi-proc"
-version = "0.0.1"
+version = "0.0.2"
 dependencies = [
  "lazy_static",
  "libc",
