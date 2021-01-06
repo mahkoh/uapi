@@ -183,6 +183,10 @@ imp_pod! {
     c::nlmsghdr
     c::nlattr
     c::ifinfomsg
+    c::input_event
+    c::open_how
+    c::sched_attr
+    c::sched_param
 }
 
 #[cfg(not(any(target_os = "macos", target_os = "freebsd", target_os = "openbsd")))]

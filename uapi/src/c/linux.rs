@@ -4,12 +4,23 @@
 use crate::{c, c::*};
 
 // https://github.com/rust-lang/libc/pull/1759
-pub const SYS_open_tree: c_long = 428;
-pub const SYS_move_mount: c_long = 429;
-pub const SYS_fsopen: c_long = 430;
-pub const SYS_fsconfig: c_long = 431;
-pub const SYS_fsmount: c_long = 432;
-pub const SYS_fspick: c_long = 433;
+cfg_if! {
+    if #[cfg(not(target_arch = "alpha"))] {
+        pub const SYS_open_tree: c_long = 428;
+        pub const SYS_move_mount: c_long = 429;
+        pub const SYS_fsopen: c_long = 430;
+        pub const SYS_fsconfig: c_long = 431;
+        pub const SYS_fsmount: c_long = 432;
+        pub const SYS_fspick: c_long = 433;
+        pub const SYS_pidfd_open: c_long = 434;
+        pub const SYS_clone3: c_long = 435;
+        pub const SYS_close_range: c_long = 436;
+        pub const SYS_openat2: c_long = 437;
+        pub const SYS_pidfd_getfd: c_long = 438;
+        pub const SYS_faccessat2: c_long = 439;
+        pub const SYS_process_madvise: c_long = 440;
+    }
+}
 
 // https://github.com/rust-lang/libc/pull/????
 pub const OPEN_TREE_CLONE: c_uint = 1;
@@ -159,3 +170,92 @@ pub struct sockaddr_nl {
     pub nl_pid: u32,
     pub nl_groups: u32,
 }
+
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub struct open_how {
+    pub flags: u64,
+    pub mode: u64,
+    pub resolve: u64,
+}
+
+pub const RESOLVE_NO_XDEV: u64 = 0x01;
+pub const RESOLVE_NO_MAGICLINKS: u64 = 0x02;
+pub const RESOLVE_NO_SYMLINKS: u64 = 0x04;
+pub const RESOLVE_BENEATH: u64 = 0x08;
+pub const RESOLVE_IN_ROOT: u64 = 0x10;
+
+pub unsafe fn openat2(
+    dirfd: c_int,
+    pathname: *const c_char,
+    how: *mut open_how,
+    size: usize,
+) -> c_int {
+    syscall(
+        SYS_openat2,
+        dirfd as usize,
+        pathname as usize,
+        how as usize,
+        size,
+    ) as c_int
+}
+
+#[derive(Copy, Clone)]
+#[repr(C)]
+pub struct sched_attr {
+    pub size: u32,
+    pub sched_policy: u32,
+    pub sched_flags: u64,
+    pub sched_nice: i32,
+    pub sched_priority: u32,
+    pub sched_runtime: u64,
+    pub sched_deadline: u64,
+    pub sched_period: u64,
+    pub sched_util_min: u32,
+    pub sched_util_max: u32,
+    _private: (),
+}
+
+pub unsafe fn sched_getattr(
+    pid: pid_t,
+    attr: *mut sched_attr,
+    size: c::c_uint,
+    flags: c::c_uint,
+) -> c::c_int {
+    syscall(
+        SYS_sched_getattr,
+        pid as usize,
+        attr as usize,
+        size as usize,
+        flags as usize,
+    ) as c::c_int
+}
+
+pub unsafe fn sched_setattr(
+    pid: pid_t,
+    attr: *mut sched_attr,
+    flags: c_uint,
+) -> c::c_int {
+    syscall(
+        SYS_sched_setattr,
+        pid as usize,
+        attr as usize,
+        flags as usize,
+    ) as c::c_int
+}
+
+pub const SCHED_FLAG_RESET_ON_FORK: u64 = 0x01;
+pub const SCHED_FLAG_RECLAIM: u64 = 0x02;
+pub const SCHED_FLAG_DL_OVERRUN: u64 = 0x04;
+pub const SCHED_FLAG_KEEP_POLICY: u64 = 0x08;
+pub const SCHED_FLAG_KEEP_PARAMS: u64 = 0x10;
+pub const SCHED_FLAG_UTIL_CLAMP_MIN: u64 = 0x20;
+pub const SCHED_FLAG_UTIL_CLAMP_MAX: u64 = 0x40;
+pub const SCHED_FLAG_KEEP_ALL: u64 = SCHED_FLAG_KEEP_POLICY | SCHED_FLAG_KEEP_PARAMS;
+pub const SCHED_FLAG_UTIL_CLAMP: u64 =
+    SCHED_FLAG_UTIL_CLAMP_MIN | SCHED_FLAG_UTIL_CLAMP_MAX;
+pub const SCHED_FLAG_ALL: u64 = SCHED_FLAG_RESET_ON_FORK
+    | SCHED_FLAG_RECLAIM
+    | SCHED_FLAG_DL_OVERRUN
+    | SCHED_FLAG_KEEP_ALL
+    | SCHED_FLAG_UTIL_CLAMP;
