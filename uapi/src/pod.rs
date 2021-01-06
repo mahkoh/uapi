@@ -249,6 +249,14 @@ pub fn as_bytes<T: Packed + ?Sized>(t: &T) -> &[u8] {
     }
 }
 
+/// Returns the mutable object representation of `t`
+pub fn as_bytes_mut<T: Pod + Packed + ?Sized>(t: &mut T) -> &mut [u8] {
+    unsafe {
+        let ptr = t as *mut _ as *mut u8;
+        slice::from_raw_parts_mut(ptr, mem::size_of_val(t))
+    }
+}
+
 /// Transparent wrapper that asserts that a type is `Pod`
 #[repr(transparent)]
 #[derive(Copy)]
