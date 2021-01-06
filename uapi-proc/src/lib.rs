@@ -36,6 +36,7 @@ lazy_static! {
 
             tc.linux_4_16 = major > 4 || (major == 4 && minor >= 16);
             tc.linux_5_2 = major > 5 || (major == 5 && minor >= 2);
+            tc.linux_5_6 = major > 5 || (major == 5 && minor >= 6);
         }
 
         tc
@@ -47,6 +48,7 @@ struct TestConditions {
     root: bool,
     linux_4_16: bool,
     linux_5_2: bool,
+    linux_5_6: bool,
 }
 
 impl Parse for TestConditions {
@@ -59,6 +61,7 @@ impl Parse for TestConditions {
                 "root" => tc.root = true,
                 "linux_4_16" => tc.linux_4_16 = true,
                 "linux_5_2" => tc.linux_5_2 = true,
+                "linux_5_6" => tc.linux_5_6 = true,
                 n => {
                     return Err(syn::Error::new(
                         name.span(),
@@ -83,7 +86,8 @@ pub fn test_if(
     let tc = parse_macro_input!(attr as TestConditions);
     let ignore = (tc.root && !TC.root)
         || (tc.linux_4_16 && !TC.linux_4_16)
-        || (tc.linux_5_2 && !TC.linux_5_2);
+        || (tc.linux_5_2 && !TC.linux_5_2)
+        || (tc.linux_5_6 && !TC.linux_5_6);
     #[allow(clippy::match_bool)] // already disabled upstream
     let ignore = match ignore {
         false => quote!(),
