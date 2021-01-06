@@ -4,6 +4,5 @@
 !.gitignore
 !.github
 !.builds
-Cargo.lock
 /coverage
 strace
