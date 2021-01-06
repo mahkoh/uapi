@@ -301,3 +301,16 @@ pub fn fallocate(
     let val = unsafe { c::fallocate(fd, mode, offset, len) };
     map_err!(val).map(drop)
 }
+
+#[man(openat2(2))]
+pub fn openat2<'a>(
+    dirfd: c::c_int,
+    pathname: impl IntoUstr<'a>,
+    how: &c::open_how,
+) -> Result<OwnedFd> {
+    let path = pathname.into_ustr();
+    let mut how = *how;
+    let val =
+        unsafe { c::openat2(dirfd, path.as_ptr(), &mut how, mem::size_of_val(&how)) };
+    map_err!(val).map(OwnedFd::new)
+}

@@ -3,6 +3,7 @@ use testutils::*;
 use uapi::*;
 use proc::*;
 use std::collections::HashSet;
+use uapi::c::open_how;
 
 #[test]
 fn read_write1() {
@@ -222,4 +223,34 @@ fn makedev_() {
     assert_eq!(makedev(22222, 333333), 87962295914005);
     assert_eq!(major(makedev(22222, 333333)), 22222);
     assert_eq!(minor(makedev(22222, 333333)), 333333);
+}
+
+#[test_if(linux_5_6)]
+fn openat2_() {
+    let tmp = Tempdir::new();
+    let dir = &*format!("{}/a", tmp);
+    mkdir(dir, 0o777).unwrap();
+    let dfd = open(dir, c::O_PATH, 0).unwrap();
+    {
+        let mut how: open_how = pod_zeroed();
+        how.mode = 0o777;
+        how.flags = (c::O_CREAT|c::O_WRONLY|c::O_CLOEXEC) as u64;
+        let mut file = openat2(*dfd, "../b", &how).unwrap();
+        assert_eq!(fcntl_getfd(*file).unwrap(), c::FD_CLOEXEC);
+        write!(file, "abc").unwrap();
+    }
+    {
+        let mut how: open_how = pod_zeroed();
+        how.flags = c::O_RDONLY as u64;
+        let file = openat2(*dfd, "../b", &how).unwrap();
+        assert_eq!(fcntl_getfd(*file).unwrap(), 0);
+        assert_eq!(read_file(file.into()), "abc");
+    }
+    {
+        let mut how: open_how = pod_zeroed();
+        how.flags = c::O_RDONLY as u64;
+        how.resolve = c::RESOLVE_IN_ROOT;
+        let err = openat2(*dfd, "../b", &how).unwrap_err();
+        assert_eq!(err.0, c::ENOENT);
+    }
 }
