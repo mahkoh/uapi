@@ -334,77 +334,75 @@ mod test {
 
     #[test]
     fn test_rt_netlink() -> Result<()> {
-        testutils::strace(true, || {
-            let socket = socket(c::AF_NETLINK, c::SOCK_RAW, c::NETLINK_ROUTE)?;
-            let addr = c::sockaddr_nl {
-                nl_family: c::AF_NETLINK as _,
-                nl_pad: 0,
-                nl_pid: 0,
-                nl_groups: 0,
-            };
-            bind(*socket, &addr)?;
-            let mut buf = [MaybeUninit::<u8>::uninit(); 32 * 1024];
-            let mut writer = NlmsgWriter::new(
-                &mut buf[..],
-                c::nlmsghdr {
-                    nlmsg_len: 0,
-                    nlmsg_type: c::RTM_GETLINK,
-                    nlmsg_flags: (c::NLM_F_REQUEST | c::NLM_F_DUMP) as _,
-                    nlmsg_seq: 0,
-                    nlmsg_pid: 0,
-                },
-            )?;
-            writer.write(&c::ifinfomsg {
-                ifi_family: c::AF_PACKET as _,
-                ifi_type: 0,
-                ifi_index: 0,
-                ifi_flags: 0,
-                ifi_change: 0,
+        let socket = socket(c::AF_NETLINK, c::SOCK_RAW, c::NETLINK_ROUTE)?;
+        let addr = c::sockaddr_nl {
+            nl_family: c::AF_NETLINK as _,
+            nl_pad: 0,
+            nl_pid: 0,
+            nl_groups: 0,
+        };
+        bind(*socket, &addr)?;
+        let mut buf = [MaybeUninit::<u8>::uninit(); 32 * 1024];
+        let mut writer = NlmsgWriter::new(
+            &mut buf[..],
+            c::nlmsghdr {
+                nlmsg_len: 0,
+                nlmsg_type: c::RTM_GETLINK,
+                nlmsg_flags: (c::NLM_F_REQUEST | c::NLM_F_DUMP) as _,
+                nlmsg_seq: 0,
+                nlmsg_pid: 0,
+            },
+        )?;
+        writer.write(&c::ifinfomsg {
+            ifi_family: c::AF_PACKET as _,
+            ifi_type: 0,
+            ifi_index: 0,
+            ifi_flags: 0,
+            ifi_change: 0,
+        })?;
+        {
+            let mut attr = writer.nest(c::nlattr {
+                nla_len: 0,
+                nla_type: c::IFLA_EXT_MASK,
             })?;
-            {
-                let mut attr = writer.nest(c::nlattr {
-                    nla_len: 0,
-                    nla_type: c::IFLA_EXT_MASK,
-                })?;
-                attr.write(&1u32)?;
-            }
-            let msg = writer.finalize()?;
-            send(*socket, msg, 0)?;
-            let mut found_loopback = false;
-            'outer: loop {
-                let mut reader = &*recv(*socket, &mut buf[..], c::MSG_TRUNC)?;
-                while reader.len() > 0 {
-                    let (_, header, mut payload) = c::nlmsghdr::read(&mut reader)?;
-                    if header.nlmsg_type == c::NLMSG_DONE as _ {
-                        break 'outer;
-                    }
-                    assert_eq!(header.nlmsg_type, c::RTM_NEWLINK);
-                    let (_, ifi) = nlmsg_read::<c::ifinfomsg>(&mut payload)?;
-                    let is_loopback = ifi.ifi_type == c::ARPHRD_LOOPBACK;
-                    if is_loopback {
-                        found_loopback = true;
-                        assert_eq!(ifi.ifi_family, c::AF_UNSPEC as c::c_uchar);
-                        assert_ne!(ifi.ifi_flags & c::IFF_UP as c::c_uint, 0);
-                        assert_ne!(ifi.ifi_flags & c::IFF_LOOPBACK as c::c_uint, 0);
-                    }
-                    let mut found_name = false;
-                    while payload.len() > 0 {
-                        let (_, header, payload) = c::nlattr::read(&mut payload)?;
-                        if header.nla_type == c::IFLA_IFNAME {
-                            found_name = true;
-                            if is_loopback {
-                                assert_eq!(payload, b"lo\0");
-                            }
+            attr.write(&1u32)?;
+        }
+        let msg = writer.finalize()?;
+        send(*socket, msg, 0)?;
+        let mut found_loopback = false;
+        'outer: loop {
+            let mut reader = &*recv(*socket, &mut buf[..], c::MSG_TRUNC)?;
+            while reader.len() > 0 {
+                let (_, header, mut payload) = c::nlmsghdr::read(&mut reader)?;
+                if header.nlmsg_type == c::NLMSG_DONE as _ {
+                    break 'outer;
+                }
+                assert_eq!(header.nlmsg_type, c::RTM_NEWLINK);
+                let (_, ifi) = nlmsg_read::<c::ifinfomsg>(&mut payload)?;
+                let is_loopback = ifi.ifi_type == c::ARPHRD_LOOPBACK;
+                if is_loopback {
+                    found_loopback = true;
+                    assert_eq!(ifi.ifi_family, c::AF_UNSPEC as c::c_uchar);
+                    assert_ne!(ifi.ifi_flags & c::IFF_UP as c::c_uint, 0);
+                    assert_ne!(ifi.ifi_flags & c::IFF_LOOPBACK as c::c_uint, 0);
+                }
+                let mut found_name = false;
+                while payload.len() > 0 {
+                    let (_, header, payload) = c::nlattr::read(&mut payload)?;
+                    if header.nla_type == c::IFLA_IFNAME {
+                        found_name = true;
+                        if is_loopback {
+                            assert_eq!(payload, b"lo\0");
                         }
                     }
-                    assert!(found_name);
-                    if header.nlmsg_flags & c::NLM_F_MULTI as u16 == 0 {
-                        break 'outer;
-                    }
+                }
+                assert!(found_name);
+                if header.nlmsg_flags & c::NLM_F_MULTI as u16 == 0 {
+                    break 'outer;
                 }
             }
-            assert!(found_loopback);
-            Ok(())
-        })
+        }
+        assert!(found_loopback);
+        Ok(())
     }
 }
