@@ -53,6 +53,7 @@ See the crate documentation for more details.
 
 - **nix** uses a nested module structure. **uapi** exports all APIs in the crate
   root.
+- **nix** I/O works on `[u8]`. **uapi** I/O works on `[MaybeUninit<u8>]`.
 - **nix** uses enums and bitflags for integer/flag parameters. **uapi** uses
   plain integers.
 - **nix** uses methods declared on wrapper types to expose APIs. **uapi** uses
