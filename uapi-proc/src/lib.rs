@@ -20,7 +20,7 @@ lazy_static! {
             libc::uname(&mut utsname);
         }
 
-        let regex = regex::bytes::Regex::new(r"^(\d+)\.(\d+)").unwrap();
+        let regex = regex::bytes::Regex::new(r"^([0-9]+)\.([0-9]+)").unwrap();
 
         if let Some(m) = regex.captures(unsafe {
             &*(&utsname.release[..] as *const [libc::c_char] as *const [u8])
@@ -134,7 +134,7 @@ impl Parse for Man {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         lazy_static! {
             static ref MAN_REG: Regex =
-                regex::Regex::new(r"([a-zA-Z]*)\(((\d+)([^)]*))\)").unwrap();
+                regex::Regex::new(r"([a-zA-Z]*)\((([0-9]+)([^)]*))\)").unwrap();
         }
 
         if input.peek(Ident) {
