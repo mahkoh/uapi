@@ -1,5 +1,2 @@
 [workspace]
 members = ["uapi", "uapi-proc", "uapi-testutils"]
-
-[profile.release.build-override]
-opt-level = 0
