@@ -15,5 +15,5 @@ libc = "0.2"
 quote = "1"
 proc-macro2 = "1"
 syn = "1"
-regex = "1"
+regex = { version = "1", default_features = false, features = ["std"] }
 lazy_static = "1"
