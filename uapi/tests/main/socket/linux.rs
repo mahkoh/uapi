@@ -1,5 +1,5 @@
-use uapi::*;
 use testutils::*;
+use uapi::*;
 
 #[test]
 fn accept4_() {
@@ -23,7 +23,9 @@ fn accept4_() {
     let client = accept4(*server, sockaddr_none_mut(), 0).unwrap().0;
     assert_ne!(fcntl_getfd(*client).unwrap() & c::FD_CLOEXEC, c::FD_CLOEXEC);
 
-    let client = accept4(*server, sockaddr_none_mut(), c::SOCK_CLOEXEC).unwrap().0;
+    let client = accept4(*server, sockaddr_none_mut(), c::SOCK_CLOEXEC)
+        .unwrap()
+        .0;
     assert_eq!(fcntl_getfd(*client).unwrap() & c::FD_CLOEXEC, c::FD_CLOEXEC);
 
     thread.join().unwrap();
