@@ -1,5 +1,5 @@
-use uapi::*;
 use testutils::Tempdir;
+use uapi::*;
 
 #[test]
 fn seal() {

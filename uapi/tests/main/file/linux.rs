@@ -1,9 +1,10 @@
-use std::io::{IoSlice, Write, IoSliceMut};
-use testutils::*;
-use uapi::*;
 use proc::*;
-use std::collections::HashSet;
-use uapi::c::open_how;
+use std::{
+    collections::HashSet,
+    io::{IoSlice, IoSliceMut, Write},
+};
+use testutils::*;
+use uapi::{c::open_how, *};
 
 #[test]
 fn read_write1() {
@@ -20,7 +21,13 @@ fn read_write1() {
 
     std::fs::write(path1, "abc").unwrap();
 
-    fallocate(*file, c::FALLOC_FL_PUNCH_HOLE | c::FALLOC_FL_KEEP_SIZE, 1, 1).unwrap();
+    fallocate(
+        *file,
+        c::FALLOC_FL_PUNCH_HOLE | c::FALLOC_FL_KEEP_SIZE,
+        1,
+        1,
+    )
+    .unwrap();
 
     assert_eq!(std::fs::read_to_string(path1).unwrap(), "a\0c");
 
@@ -98,7 +105,7 @@ fn renameat_() {
     let dir = open(tmp.bstr(), c::O_PATH, 0).unwrap();
 
     let path1 = "a";
-    let path2 = "b" ;
+    let path2 = "b";
 
     let f1 = openat(*dir, path1, c::O_CREAT | c::O_RDWR, 0).unwrap();
 
@@ -107,14 +114,23 @@ fn renameat_() {
     assert!(faccessat(*dir, path1, 0, 0).is_err());
     assert!(faccessat(*dir, path2, 0, 0).is_ok());
 
-    assert_eq!(fstatat(*dir, path2, 0).unwrap().st_ino, fstat(*f1).unwrap().st_ino);
+    assert_eq!(
+        fstatat(*dir, path2, 0).unwrap().st_ino,
+        fstat(*f1).unwrap().st_ino
+    );
 
     let f2 = openat(*dir, path1, c::O_CREAT | c::O_RDWR, 0).unwrap();
 
     renameat2(*dir, path1, *dir, path2, c::RENAME_EXCHANGE).unwrap();
 
-    assert_eq!(fstatat(*dir, path2, 0).unwrap().st_ino, fstat(*f2).unwrap().st_ino);
-    assert_eq!(fstatat(*dir, path1, 0).unwrap().st_ino, fstat(*f1).unwrap().st_ino);
+    assert_eq!(
+        fstatat(*dir, path2, 0).unwrap().st_ino,
+        fstat(*f2).unwrap().st_ino
+    );
+    assert_eq!(
+        fstatat(*dir, path1, 0).unwrap().st_ino,
+        fstat(*f1).unwrap().st_ino
+    );
 }
 
 #[test]
@@ -166,11 +182,17 @@ fn inotify() {
     let tmp = Tempdir::new();
     let mut buf = [0; 128];
 
-    assert_eq!(inotify_read(*e, &mut buf[..]).err().unwrap(), Errno(c::EAGAIN));
+    assert_eq!(
+        inotify_read(*e, &mut buf[..]).err().unwrap(),
+        Errno(c::EAGAIN)
+    );
 
     let w = inotify_add_watch(*e, tmp.bstr(), c::IN_CREATE).unwrap();
 
-    assert_eq!(inotify_read(*e, &mut buf[..]).err().unwrap(), Errno(c::EAGAIN));
+    assert_eq!(
+        inotify_read(*e, &mut buf[..]).err().unwrap(),
+        Errno(c::EAGAIN)
+    );
 
     let path1 = &*format!("{}/a", tmp);
     let path2 = &*format!("{}/b", tmp);
@@ -193,7 +215,10 @@ fn inotify() {
 
     inotify_rm_watch(*e, w).unwrap();
 
-    let events: Vec<InotifyEvent> = inotify_read(*e, &mut buf[..]).unwrap().into_iter().collect();
+    let events: Vec<InotifyEvent> = inotify_read(*e, &mut buf[..])
+        .unwrap()
+        .into_iter()
+        .collect();
     assert_eq!(events.len(), 1);
 
     assert_eq!(events[0].mask, c::IN_IGNORED);
@@ -201,7 +226,10 @@ fn inotify() {
 
     open(path3, c::O_CREAT | c::O_RDONLY, 0).unwrap();
 
-    assert_eq!(inotify_read(*e, &mut buf[..]).err().unwrap(), Errno(c::EAGAIN));
+    assert_eq!(
+        inotify_read(*e, &mut buf[..]).err().unwrap(),
+        Errno(c::EAGAIN)
+    );
 }
 
 #[test]
@@ -234,7 +262,7 @@ fn openat2_() {
     {
         let mut how: open_how = pod_zeroed();
         how.mode = 0o777;
-        how.flags = (c::O_CREAT|c::O_WRONLY|c::O_CLOEXEC) as u64;
+        how.flags = (c::O_CREAT | c::O_WRONLY | c::O_CLOEXEC) as u64;
         let mut file = openat2(*dfd, "../b", &how).unwrap();
         assert_eq!(fcntl_getfd(*file).unwrap(), c::FD_CLOEXEC);
         write!(file, "abc").unwrap();

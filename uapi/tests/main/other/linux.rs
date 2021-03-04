@@ -1,5 +1,5 @@
-use uapi::*;
 use testutils::*;
+use uapi::*;
 
 #[test]
 fn eventfd_() {
@@ -30,7 +30,8 @@ fn memfd() {
     let fd = memfd_create("xyz", c::MFD_CLOEXEC as _).unwrap();
     assert_eq!(fcntl_getfd(*fd).unwrap() & c::FD_CLOEXEC, c::FD_CLOEXEC);
 
-    let name = read_link_to_new_ustring(0, format_ustr!("/proc/self/fd/{}", *fd)).unwrap();
+    let name =
+        read_link_to_new_ustring(0, format_ustr!("/proc/self/fd/{}", *fd)).unwrap();
     assert!(name.starts_with(b"/memfd:xyz"));
 
     write(*fd, &[1]).unwrap();

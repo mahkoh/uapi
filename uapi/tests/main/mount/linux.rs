@@ -1,10 +1,15 @@
 use proc::*;
-use std::{ffi::CStr, fs, os::raw::c_int, path::Path};
+use std::{
+    ffi::CStr,
+    fs,
+    fs::File,
+    io::{BufRead, BufReader},
+    os::raw::c_int,
+    path::Path,
+};
 use tempfile::{tempdir, tempdir_in};
-use uapi::*;
 use testutils::Tempdir;
-use std::io::{BufReader, BufRead};
-use std::fs::File;
+use uapi::*;
 
 #[test_if(root)]
 fn mount_() {
