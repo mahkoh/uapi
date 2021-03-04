@@ -1,5 +1,5 @@
-use uapi::*;
 use std::mem;
+use uapi::*;
 
 #[test]
 fn epoll() {
@@ -11,7 +11,16 @@ fn epoll() {
 
     let (r, w) = pipe().unwrap();
 
-    epoll_ctl(*e, c::EPOLL_CTL_ADD, *r, Some(&c::epoll_event { events: c::EPOLLIN as _, u64: 3 })).unwrap();
+    epoll_ctl(
+        *e,
+        c::EPOLL_CTL_ADD,
+        *r,
+        Some(&c::epoll_event {
+            events: c::EPOLLIN as _,
+            u64: 3,
+        }),
+    )
+    .unwrap();
 
     let mut events = unsafe { [mem::zeroed()] };
 
