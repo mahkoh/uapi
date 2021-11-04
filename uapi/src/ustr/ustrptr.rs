@@ -1,6 +1,10 @@
 use crate::*;
-use std::{borrow::Cow, iter::FromIterator, ptr};
-use std::fmt::{Debug, Formatter};
+use std::{
+    borrow::Cow,
+    fmt::{Debug, Formatter},
+    iter::FromIterator,
+    ptr,
+};
 
 /// Wrapper for a `*const *const libc::c_char` with a terminating null pointer
 pub struct UstrPtr<'a> {
