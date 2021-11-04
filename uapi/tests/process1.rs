@@ -15,7 +15,7 @@ fn process1() {
         n => {
             let (pid, status) = wait().unwrap();
             assert_eq!(n, pid);
-            assert!(WIFEXITED(status), true);
+            assert_eq!(WIFEXITED(status), true);
             assert_eq!(WEXITSTATUS(status), 0);
         }
     }
