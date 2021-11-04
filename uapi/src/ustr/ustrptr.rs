@@ -1,5 +1,6 @@
 use crate::*;
 use std::{borrow::Cow, iter::FromIterator, ptr};
+use std::fmt::{Debug, Formatter};
 
 /// Wrapper for a `*const *const libc::c_char` with a terminating null pointer
 pub struct UstrPtr<'a> {
@@ -52,5 +53,11 @@ impl<'a, T: IntoUstr<'a>> FromIterator<T> for UstrPtr<'a> {
 impl<'a> Default for UstrPtr<'a> {
     fn default() -> Self {
         UstrPtr::new()
+    }
+}
+
+impl<'a> Debug for UstrPtr<'a> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        Debug::fmt(&self.ustrs, f)
     }
 }
