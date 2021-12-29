@@ -189,6 +189,9 @@ imp_pod! {
     c::sched_param
     c::genlmsghdr
     c::nlmsgerr
+    c::itimerspec
+    c::itimerval
+    c::epoll_event
 }
 
 #[cfg(not(any(target_os = "macos", target_os = "freebsd", target_os = "openbsd")))]
