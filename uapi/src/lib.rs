@@ -1,5 +1,9 @@
 #![allow(deprecated)]
-#![allow(clippy::or_fun_call)]
+#![allow(
+    clippy::or_fun_call,
+    clippy::manual_non_exhaustive,
+    clippy::needless_lifetimes
+)]
 // https://github.com/rust-lang/rust-clippy/issues/6466
 #![allow(clippy::useless_conversion)]
 // https://github.com/rust-lang/rust-clippy/issues/6372
@@ -13,8 +17,8 @@ extern crate proc; // https://github.com/rust-lang/rust/issues/64450
 
 pub use crate::{
     dir::*, errno::*, fcntl::*, fd::*, file::*, ioctl::*, mount::*, other::*, pod::*,
-    poll::*, process::*, result::*, sched::*, signal::*, socket::*, uninit::*, ustr::*,
-    util::*,
+    poll::*, process::*, result::*, sched::*, signal::*, socket::*, timer::*, uninit::*,
+    ustr::*, util::*,
 };
 
 use proc::*;
@@ -39,6 +43,7 @@ mod result;
 mod sched;
 mod signal;
 mod socket;
+mod timer;
 mod uninit;
 mod ustr;
 mod util;

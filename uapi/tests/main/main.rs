@@ -17,5 +17,6 @@ mod result;
 mod sched;
 mod signal;
 mod socket;
+mod timer;
 mod ustr;
 mod util;

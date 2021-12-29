@@ -12,8 +12,10 @@ use syn::{
 
 lazy_static! {
     static ref TC: TestConditions = {
-        let mut tc = TestConditions::default();
-        tc.root = unsafe { libc::geteuid() == 0 };
+        let mut tc = TestConditions {
+            root: unsafe { libc::geteuid() == 0 },
+            ..Default::default()
+        };
 
         let mut utsname = unsafe { std::mem::zeroed() };
         unsafe {
