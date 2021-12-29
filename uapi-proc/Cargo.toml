@@ -1,6 +1,6 @@
 [package]
 name = "uapi-proc"
-version = "0.0.2"
+version = "0.0.3"
 authors = ["Julian Orth <ju.orth@gmail.com>"]
 edition = "2018"
 description = "Internal macros for the uapi crate. DO NOT USE!"

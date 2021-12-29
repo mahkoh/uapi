@@ -1,6 +1,6 @@
 [package]
 name = "uapi"
-version = "0.2.2"
+version = "0.2.3"
 authors = ["Julian Orth <ju.orth@gmail.com>"]
 edition = "2018"
 description = "Wrappers for OS APIs on UNIX-like platform"
@@ -13,7 +13,7 @@ readme = "../README.md"
 [dependencies]
 libc = "0.2"
 cfg-if = "0.1"
-proc = { package = "uapi-proc", version = "0.0.2", path = "../uapi-proc" }
+proc = { package = "uapi-proc", version = "0.0.3", path = "../uapi-proc" }
 
 [dev-dependencies]
 tempfile = "3.0.5"
