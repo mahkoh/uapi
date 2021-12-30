@@ -169,9 +169,7 @@ pub fn as_maybe_uninit_bytes_mut<T>(t: &mut MaybeUninit<T>) -> &mut [MaybeUninit
 /// # Safety
 ///
 /// The returned reference must not be used to write uninitialized data into `t`.
-pub(crate) unsafe fn as_maybe_uninit_bytes_mut2<T: ?Sized>(
-    t: &mut T,
-) -> &mut [MaybeUninit<u8>] {
+pub unsafe fn as_maybe_uninit_bytes_mut2<T: ?Sized>(t: &mut T) -> &mut [MaybeUninit<u8>] {
     let ptr = t as *mut _ as *mut MaybeUninit<u8>;
     slice::from_raw_parts_mut(ptr, mem::size_of_val(t))
 }
