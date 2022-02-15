@@ -314,3 +314,16 @@ pub fn openat2<'a>(
         unsafe { c::openat2(dirfd, path.as_ptr(), &mut how, mem::size_of_val(&how)) };
     map_err!(val).map(OwnedFd::new)
 }
+
+#[man(close_range(2))]
+pub fn close_range(first: c::c_uint, last: c::c_uint, flags: c::c_uint) -> Result<()> {
+    let val = unsafe {
+        c::syscall(
+            c::SYS_close_range,
+            first as usize,
+            last as usize,
+            flags as usize,
+        )
+    };
+    map_err!(val).map(drop)
+}
