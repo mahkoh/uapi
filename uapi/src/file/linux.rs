@@ -30,7 +30,7 @@ pub fn renameat2<'a, 'b>(
     oldpath: impl IntoUstr<'a>,
     newdirfd: c::c_int,
     newpath: impl IntoUstr<'b>,
-    flags: c::c_int,
+    flags: c::c_uint,
 ) -> Result<()> {
     let oldpath = oldpath.into_ustr();
     let newpath = newpath.into_ustr();

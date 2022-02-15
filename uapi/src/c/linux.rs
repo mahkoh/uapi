@@ -3,9 +3,13 @@
 
 use crate::{c, c::*};
 
-// https://github.com/rust-lang/libc/pull/1759
 cfg_if! {
+    // https://github.com/torvalds/linux/blob/d567f5db412ed52de0b3b3efca4a451263de6108/arch/alpha/kernel/syscalls/syscall.tbl#L464-L465
     if #[cfg(not(target_arch = "alpha"))] {
+        pub const SYS_pidfd_send_signal: c_long = 424;
+        pub const SYS_io_uring_setup: c_long = 425;
+        pub const SYS_io_uring_enter: c_long = 426;
+        pub const SYS_io_uring_register: c_long = 427;
         pub const SYS_open_tree: c_long = 428;
         pub const SYS_move_mount: c_long = 429;
         pub const SYS_fsopen: c_long = 430;
@@ -19,6 +23,16 @@ cfg_if! {
         pub const SYS_pidfd_getfd: c_long = 438;
         pub const SYS_faccessat2: c_long = 439;
         pub const SYS_process_madvise: c_long = 440;
+        pub const SYS_epoll_pwait2: c_long = 441;
+        pub const SYS_mount_setattr: c_long = 442;
+        pub const SYS_quotactl_fd: c_long = 443;
+        pub const SYS_landlock_create_ruleset: c_long = 444;
+        pub const SYS_landlock_add_rule: c_long = 445;
+        pub const SYS_landlock_restrict_self: c_long = 446;
+        pub const SYS_memfd_secret: c_long = 447;
+        pub const SYS_process_mrelease: c_long = 448;
+        pub const SYS_futex_waitv: c_long = 449;
+        pub const SYS_set_mempolicy_home_node: c_long = 450;
     }
 }
 
@@ -289,3 +303,5 @@ pub unsafe fn sched_setparam(pid: pid_t, param: *const sched_param) -> c_int {
 
 pub const CLOSE_RANGE_UNSHARE: c::c_uint = 1 << 1;
 pub const CLOSE_RANGE_CLOEXEC: c::c_uint = 1 << 2;
+
+pub const PIDFD_NONBLOCK: c::c_uint = c::O_NONBLOCK as _;

@@ -66,3 +66,26 @@ pub fn pivot_root<'a, 'b>(
     };
     map_err!(res).map(drop)
 }
+
+#[man(pidfd_open(2))]
+pub fn pidfd_open(pid: c::pid_t, flags: c::c_uint) -> Result<OwnedFd> {
+    let res = unsafe { c::syscall(c::SYS_pidfd_open, pid as usize, flags as usize) };
+    map_err!(res).map(|f| OwnedFd::new(f as _))
+}
+
+#[man(pidfd_getfd(2))]
+pub fn pidfd_getfd(
+    pidfd: c::c_int,
+    targetfd: c::c_int,
+    flags: c::c_uint,
+) -> Result<OwnedFd> {
+    let res = unsafe {
+        c::syscall(
+            c::SYS_pidfd_getfd,
+            pidfd as usize,
+            targetfd as usize,
+            flags as usize,
+        )
+    };
+    map_err!(res).map(|f| OwnedFd::new(f as _))
+}
