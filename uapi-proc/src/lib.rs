@@ -39,6 +39,7 @@ lazy_static! {
             tc.linux_4_16 = major > 4 || (major == 4 && minor >= 16);
             tc.linux_5_2 = major > 5 || (major == 5 && minor >= 2);
             tc.linux_5_6 = major > 5 || (major == 5 && minor >= 6);
+            tc.linux_5_9 = major > 5 || (major == 5 && minor >= 9);
         }
 
         tc
@@ -51,6 +52,7 @@ struct TestConditions {
     linux_4_16: bool,
     linux_5_2: bool,
     linux_5_6: bool,
+    linux_5_9: bool,
 }
 
 impl Parse for TestConditions {
@@ -64,6 +66,7 @@ impl Parse for TestConditions {
                 "linux_4_16" => tc.linux_4_16 = true,
                 "linux_5_2" => tc.linux_5_2 = true,
                 "linux_5_6" => tc.linux_5_6 = true,
+                "linux_5_9" => tc.linux_5_9 = true,
                 n => {
                     return Err(syn::Error::new(
                         name.span(),
@@ -89,7 +92,8 @@ pub fn test_if(
     let ignore = (tc.root && !TC.root)
         || (tc.linux_4_16 && !TC.linux_4_16)
         || (tc.linux_5_2 && !TC.linux_5_2)
-        || (tc.linux_5_6 && !TC.linux_5_6);
+        || (tc.linux_5_6 && !TC.linux_5_6)
+        || (tc.linux_5_9 && !TC.linux_5_9);
     #[allow(clippy::match_bool)] // already disabled upstream
     let ignore = match ignore {
         false => quote!(),

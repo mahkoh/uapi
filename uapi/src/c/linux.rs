@@ -286,3 +286,6 @@ pub unsafe fn sched_getparam(pid: pid_t, param: *mut sched_param) -> c_int {
 pub unsafe fn sched_setparam(pid: pid_t, param: *const sched_param) -> c_int {
     syscall(SYS_sched_setparam, pid as usize, param as usize) as c::c_int
 }
+
+pub const CLOSE_RANGE_UNSHARE: c::c_uint = 1 << 1;
+pub const CLOSE_RANGE_CLOEXEC: c::c_uint = 1 << 2;

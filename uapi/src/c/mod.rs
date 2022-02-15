@@ -35,7 +35,7 @@ cfg_if! {
             SCHED_FLAG_KEEP_POLICY, SCHED_FLAG_KEEP_PARAMS, SCHED_FLAG_UTIL_CLAMP_MIN,
             SCHED_FLAG_UTIL_CLAMP_MAX, SCHED_FLAG_KEEP_ALL, SCHED_FLAG_UTIL_CLAMP,
             SCHED_FLAG_ALL, sched_getscheduler, sched_setscheduler, sched_getparam,
-            sched_setparam,
+            sched_setparam, CLOSE_RANGE_CLOEXEC, CLOSE_RANGE_UNSHARE,
         };
     }
 }
