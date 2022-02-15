@@ -72,8 +72,8 @@ impl<'a> IntoUstr<'a> for &'a Bstr {
     }
 }
 
-impl IntoUstr<'static> for Vec<u8> {
-    fn into_ustr(self) -> Cow<'static, Ustr> {
+impl<'a> IntoUstr<'a> for Vec<u8> {
+    fn into_ustr(self) -> Cow<'a, Ustr> {
         Cow::Owned(Ustring::from_vec(self))
     }
 }
@@ -84,8 +84,8 @@ impl<'a> IntoUstr<'a> for &'a str {
     }
 }
 
-impl IntoUstr<'static> for String {
-    fn into_ustr(self) -> Cow<'static, Ustr> {
+impl<'a> IntoUstr<'a> for String {
+    fn into_ustr(self) -> Cow<'a, Ustr> {
         self.into_bytes().into_ustr()
     }
 }
@@ -96,8 +96,8 @@ impl<'a> IntoUstr<'a> for &'a CStr {
     }
 }
 
-impl IntoUstr<'static> for CString {
-    fn into_ustr(self) -> Cow<'static, Ustr> {
+impl<'a> IntoUstr<'a> for CString {
+    fn into_ustr(self) -> Cow<'a, Ustr> {
         Cow::Owned(Ustring::from_c_string(self))
     }
 }
@@ -108,8 +108,8 @@ impl<'a> IntoUstr<'a> for &'a OsStr {
     }
 }
 
-impl IntoUstr<'static> for OsString {
-    fn into_ustr(self) -> Cow<'static, Ustr> {
+impl<'a> IntoUstr<'a> for OsString {
+    fn into_ustr(self) -> Cow<'a, Ustr> {
         self.into_vec().into_ustr()
     }
 }
@@ -120,8 +120,8 @@ impl<'a> IntoUstr<'a> for &'a Path {
     }
 }
 
-impl IntoUstr<'static> for PathBuf {
-    fn into_ustr(self) -> Cow<'static, Ustr> {
+impl<'a> IntoUstr<'a> for PathBuf {
+    fn into_ustr(self) -> Cow<'a, Ustr> {
         self.into_os_string().into_ustr()
     }
 }
