@@ -144,7 +144,7 @@ dependencies = [
 
 [[package]]
 name = "uapi"
-version = "0.2.5"
+version = "0.2.6"
 dependencies = [
  "cc",
  "cfg-if 0.1.10",
@@ -156,7 +156,7 @@ dependencies = [
 
 [[package]]
 name = "uapi-proc"
-version = "0.0.4"
+version = "0.0.5"
 dependencies = [
  "lazy_static",
  "libc",
