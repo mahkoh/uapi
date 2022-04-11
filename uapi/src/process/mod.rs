@@ -1,7 +1,7 @@
 #![allow(non_snake_case)]
 
 use crate::*;
-use std::{convert::TryInto, ffi::CStr};
+use std::{convert::TryInto, ffi::CStr, mem};
 
 cfg_if::cfg_if! {
     if #[cfg(target_os = "linux")] {
@@ -341,4 +341,18 @@ pub fn WIFCONTINUED(s: c::c_int) -> bool {
 #[man(wait(2))]
 pub fn WCOREDUMP(s: c::c_int) -> bool {
     c::WCOREDUMP(s)
+}
+
+#[man(getrlimit(2))]
+pub fn getrlimit(resource: c::c_int) -> Result<c::rlimit> {
+    unsafe {
+        let mut limit = mem::zeroed();
+        map_err!(c::getrlimit(resource as _, &mut limit))?;
+        Ok(limit)
+    }
+}
+
+#[man(setrlimit(2))]
+pub fn setrlimit(resource: c::c_int, limit: &c::rlimit) -> Result<()> {
+    unsafe { map_err!(c::setrlimit(resource as _, limit)).map(drop) }
 }
