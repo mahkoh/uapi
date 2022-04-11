@@ -144,7 +144,7 @@ dependencies = [
 
 [[package]]
 name = "uapi"
-version = "0.2.8"
+version = "0.2.9"
 dependencies = [
  "cc",
  "cfg-if 0.1.10",
