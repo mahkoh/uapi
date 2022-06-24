@@ -147,6 +147,9 @@ imp_pod! {
     i128
     isize
 
+    f32
+    f64
+
     c::sockaddr
     c::sockaddr_storage
     c::sockaddr_un
@@ -241,6 +244,9 @@ imp_packed! {
     i64
     i128
     isize
+
+    f32
+    f64
 
     OwnedFd
     Fd
