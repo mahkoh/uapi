@@ -6,7 +6,7 @@ use std::{
     net::{TcpListener, TcpStream, UdpSocket},
     ops::Deref,
     os::{
-        fd::{AsFd, BorrowedFd},
+        fd::{AsFd, AsRawFd, BorrowedFd, RawFd},
         raw::c_int,
         unix::{
             io::{FromRawFd, IntoRawFd},
@@ -72,6 +72,24 @@ impl AsFd for OwnedFd {
     fn as_fd(&self) -> BorrowedFd<'_> {
         assert_ne!(self.raw, -1);
         unsafe { BorrowedFd::borrow_raw(self.raw) }
+    }
+}
+
+impl AsRawFd for OwnedFd {
+    fn as_raw_fd(&self) -> RawFd {
+        self.raw
+    }
+}
+
+impl FromRawFd for OwnedFd {
+    unsafe fn from_raw_fd(fd: RawFd) -> Self {
+        Self::new(fd)
+    }
+}
+
+impl IntoRawFd for OwnedFd {
+    fn into_raw_fd(self) -> RawFd {
+        self.unwrap()
     }
 }
 
@@ -162,6 +180,12 @@ impl AsFd for Fd {
     fn as_fd(&self) -> BorrowedFd<'_> {
         assert_ne!(self.raw, -1);
         unsafe { BorrowedFd::borrow_raw(self.raw) }
+    }
+}
+
+impl AsRawFd for Fd {
+    fn as_raw_fd(&self) -> RawFd {
+        self.raw
     }
 }
 
