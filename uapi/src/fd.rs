@@ -6,6 +6,7 @@ use std::{
     net::{TcpListener, TcpStream, UdpSocket},
     ops::Deref,
     os::{
+        fd::{AsFd, BorrowedFd},
         raw::c_int,
         unix::{
             io::{FromRawFd, IntoRawFd},
@@ -23,6 +24,9 @@ use std::{
 /// The contained file descriptor can be accessed via deref: `*self`.
 ///
 /// This struct can be converted `From` and `Into` various `std` types.
+///
+/// This struct implements [`AsFd`], however, note that we do not enforce the requirements
+/// of [`BorrowedFd`].
 #[derive(Debug, Eq, PartialEq)]
 #[repr(transparent)]
 pub struct OwnedFd {
@@ -49,6 +53,25 @@ impl OwnedFd {
     /// Returns `*self`
     pub fn raw(&self) -> c_int {
         self.raw
+    }
+}
+
+impl From<std::os::fd::OwnedFd> for OwnedFd {
+    fn from(value: std::os::fd::OwnedFd) -> Self {
+        Self::new(value.into_raw_fd())
+    }
+}
+
+impl From<OwnedFd> for std::os::fd::OwnedFd {
+    fn from(value: OwnedFd) -> Self {
+        unsafe { std::os::fd::OwnedFd::from_raw_fd(value.unwrap()) }
+    }
+}
+
+impl AsFd for OwnedFd {
+    fn as_fd(&self) -> BorrowedFd<'_> {
+        assert_ne!(self.raw, -1);
+        unsafe { BorrowedFd::borrow_raw(self.raw) }
     }
 }
 
@@ -114,6 +137,9 @@ from!(ChildStdout);
 /// The contained file descriptor can be accessed via deref: `*self`.
 ///
 /// This struct implements `Read` and `Write`.
+///
+/// This struct implements [`AsFd`], however, note that we do not enforce the requirements
+/// of [`BorrowedFd`].
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 #[repr(transparent)]
 pub struct Fd {
@@ -129,6 +155,13 @@ impl Fd {
     /// Returns `*self`
     pub fn raw(self) -> c_int {
         self.raw
+    }
+}
+
+impl AsFd for Fd {
+    fn as_fd(&self) -> BorrowedFd<'_> {
+        assert_ne!(self.raw, -1);
+        unsafe { BorrowedFd::borrow_raw(self.raw) }
     }
 }
 
