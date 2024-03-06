@@ -12,7 +12,7 @@ readme = "../README.md"
 
 [dependencies]
 libc = "0.2"
-cfg-if = "0.1"
+cfg-if = "1"
 proc = { package = "uapi-proc", version = "0.0.5", path = "../uapi-proc" }
 
 [dev-dependencies]
