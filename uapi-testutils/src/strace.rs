@@ -34,7 +34,7 @@ pub fn strace<T, F: FnOnce() -> T>(trace: bool, f: F) -> T {
         let mut pipe = || loop {
             let res = read(*stderr, &mut buf[..]);
             match res {
-                Ok(buf) if buf.is_empty() => break,
+                Ok([]) => break,
                 Err(Errno(c::EAGAIN)) => break,
                 Ok(buf) => {
                     // std::io::Write::write_all(&mut Fd::new(2), &buf[..n]).unwrap();

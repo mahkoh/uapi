@@ -7,7 +7,7 @@ pub fn sched_setaffinity(pid: c::pid_t, mask: &[usize]) -> Result<()> {
         let res = c::syscall(
             c::SYS_sched_setaffinity,
             pid as usize,
-            mem::size_of_val(mask) as usize,
+            mem::size_of_val(mask),
             mask.as_ptr() as usize,
         );
         map_err!(res).map(drop)
@@ -20,7 +20,7 @@ pub fn sched_getaffinity(pid: c::pid_t, mask: &mut [usize]) -> Result<usize> {
         let res = c::syscall(
             c::SYS_sched_getaffinity,
             pid as usize,
-            mem::size_of_val(mask) as usize,
+            mem::size_of_val(mask),
             mask.as_mut_ptr() as usize,
         );
         map_err!(res).map(|v| v as usize)
