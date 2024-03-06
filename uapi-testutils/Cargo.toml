@@ -8,4 +8,4 @@ edition = "2018"
 uapi = { path = "../uapi" }
 tempfile = "3.0.5"
 proc = { package = "uapi-proc", path = "../uapi-proc" }
-cfg-if = "0.1"
+cfg-if = "1"
