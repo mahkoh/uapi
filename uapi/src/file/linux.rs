@@ -17,7 +17,7 @@ pub fn copy_file_range(
             off_in.map(|p| p as *mut _).unwrap_or(ptr::null_mut()) as usize,
             fd_out as usize,
             off_out.map(|p| p as *mut _).unwrap_or(ptr::null_mut()) as usize,
-            len as usize,
+            len,
             flags as usize,
         )
     };

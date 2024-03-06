@@ -39,11 +39,11 @@ pub const _IOC_TYPEBITS: u64 = 8;
 /// [`_IOC_NRSHIFT`](https://github.com/torvalds/linux/blob/v5.6/include/uapi/asm-generic/ioctl.h)
 pub const _IOC_NRSHIFT: u64 = 0;
 /// [`_IOC_TYPESHIFT`](https://github.com/torvalds/linux/blob/v5.6/include/uapi/asm-generic/ioctl.h)
-pub const _IOC_TYPESHIFT: u64 = _IOC_NRSHIFT + _IOC_NRBITS as u64;
+pub const _IOC_TYPESHIFT: u64 = _IOC_NRSHIFT + _IOC_NRBITS;
 /// [`_IOC_SIZESHIFT`](https://github.com/torvalds/linux/blob/v5.6/include/uapi/asm-generic/ioctl.h)
-pub const _IOC_SIZESHIFT: u64 = _IOC_TYPESHIFT + _IOC_TYPEBITS as u64;
+pub const _IOC_SIZESHIFT: u64 = _IOC_TYPESHIFT + _IOC_TYPEBITS;
 /// [`_IOC_DIRSHIFT`](https://github.com/torvalds/linux/blob/v5.6/include/uapi/asm-generic/ioctl.h)
-pub const _IOC_DIRSHIFT: u64 = _IOC_SIZESHIFT + _IOC_SIZEBITS as u64;
+pub const _IOC_DIRSHIFT: u64 = _IOC_SIZESHIFT + _IOC_SIZEBITS;
 /// [`_IOC_NRMASK`](https://github.com/torvalds/linux/blob/v5.6/include/uapi/asm-generic/ioctl.h)
 pub const _IOC_NRMASK: u64 = (1 << _IOC_NRBITS) - 1;
 /// [`_IOC_TYPEMASK`](https://github.com/torvalds/linux/blob/v5.6/include/uapi/asm-generic/ioctl.h)

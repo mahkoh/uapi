@@ -270,8 +270,7 @@ pub fn sock_opt(item: proc_macro::TokenStream) -> proc_macro::TokenStream {
     if get {
         let man = format!(
             "getsockopt(2) with level = `{}` and optname = `{}`",
-            level.to_string(),
-            optname.to_string()
+            level, optname
         );
         let fnname = Ident::new(
             &format!("getsockopt_{}", optname.to_string().to_lowercase()),
@@ -291,8 +290,7 @@ pub fn sock_opt(item: proc_macro::TokenStream) -> proc_macro::TokenStream {
     if set {
         let man = format!(
             "setsockopt(2) with level = `{}` and optname = `{}`",
-            level.to_string(),
-            optname.to_string()
+            level, optname
         );
         let fnname = Ident::new(
             &format!("setsockopt_{}", optname.to_string().to_lowercase()),

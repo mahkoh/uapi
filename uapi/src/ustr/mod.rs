@@ -1,6 +1,5 @@
 pub use self::{
-    as_ustr::*, bstr::*, bytes::*, eq::*, into::*, read::*, ustr::*, ustring::*,
-    ustrptr::*,
+    as_ustr::*, bstr::*, bytes::*, into::*, read::*, ustr::*, ustring::*, ustrptr::*,
 };
 
 mod as_ustr;

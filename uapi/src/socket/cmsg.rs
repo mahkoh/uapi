@@ -118,6 +118,6 @@ pub fn cmsg_write<T: ?Sized>(
         ptr.add(HDR_SPACE)
             .copy_from_nonoverlapping(data as *const _ as *const _, data_size);
     }
-    *buf = &mut mem::replace(buf, &mut [])[cmsg_space..];
+    *buf = &mut mem::take(buf)[cmsg_space..];
     Ok(cmsg_space)
 }
