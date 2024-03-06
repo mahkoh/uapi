@@ -1,6 +1,6 @@
 [package]
 name = "uapi"
-version = "0.2.10"
+version = "0.2.11"
 authors = ["Julian Orth <ju.orth@gmail.com>"]
 edition = "2018"
 description = "Wrappers for OS APIs on UNIX-like platform"
