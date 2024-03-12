@@ -114,6 +114,9 @@ fn pod_write_common_prefix<T: Pod + ?Sized, U: Packed + ?Sized>(
 unsafe impl<T: Pod> Pod for [T] {
 }
 
+unsafe impl<T: Pod, const N: usize> Pod for [T; N] {
+}
+
 // TODO: https://github.com/rust-lang/rust/pull/79135
 // unsafe impl<T: Pod, const N: usize> Pod for [T; N] {
 // }
@@ -213,6 +216,9 @@ imp_pod! {
 pub unsafe trait Packed {}
 
 unsafe impl<T: Packed> Packed for [T] {
+}
+
+unsafe impl<T: Packed, const N: usize> Packed for [T; N] {
 }
 
 // TODO: https://github.com/rust-lang/rust/pull/79135
