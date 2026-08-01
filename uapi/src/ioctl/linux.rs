@@ -18,7 +18,8 @@ cfg_if! {
     }
 }
 cfg_if! {
-    if #[cfg(any(target_arch = "x86", target_arch = "arm", target_arch = "s390x", target_arch = "x86_64", target_arch = "aarch64", target_arch = "riscv64"))] {
+    if #[cfg(any(target_arch = "x86", target_arch = "arm", target_arch = "s390x", target_arch = "x86_64", target_arch = "aarch64", target_arch = "riscv64",
+                 target_arch = "loongarch64"))] {
         /// [`_IOC_NONE`](https://github.com/torvalds/linux/blob/v5.6/include/uapi/asm-generic/ioctl.h)
         pub const _IOC_NONE: u64 = 0;
         /// [`_IOC_READ`](https://github.com/torvalds/linux/blob/v5.6/include/uapi/asm-generic/ioctl.h)
