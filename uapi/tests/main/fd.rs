@@ -1,3 +1,5 @@
+#![allow(clippy::zombie_processes)]
+
 use std::{
     fs::File,
     io::{IoSlice, IoSliceMut, Read, Write},

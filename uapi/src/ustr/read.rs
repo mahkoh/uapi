@@ -12,7 +12,7 @@ pub trait UapiReadExt {
 
 impl<T: Read> UapiReadExt for T {
     fn read_to_ustring(&mut self, orig: &mut Ustring) -> io::Result<usize> {
-        let mut s = mem::replace(orig, Ustring::new()).into_vec();
+        let mut s = mem::take(orig).into_vec();
         let res = self.read_to_end(&mut s);
         *orig = Ustring::from_vec(s);
         res

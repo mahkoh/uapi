@@ -99,9 +99,9 @@
 //! - `pod_zeroed` - Returns an instance of a `Pod` type with all bytes zeroed.
 //! - `pod_read` - Reads an instance of a `Packed` type as an instance of a `Pod` type.
 //! - `pod_iter` - Iterates over the instances of a `Pod` typed stored in an instance of a
-//!    `Packed` type.
+//!   `Packed` type.
 //! - `pod_read_init` - Reads an initial part of an instance of a `Packed` type as an
-//!     instance of a `Pod` type.
+//!   instance of a `Pod` type.
 //! - `pod_write` - Writes an instance of a `Packed` type to an instance of a `Pod` type.
 //! - `as_bytes` - Returns the bytes of an instance of a `Packed` type.
 //!

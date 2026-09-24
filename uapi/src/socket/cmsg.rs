@@ -75,7 +75,7 @@ pub fn cmsg_read<'a>(buf: &mut &'a [u8]) -> Result<(usize, c::cmsghdr, &'a [u8])
     if cmsg_len < HDR_SPACE {
         return einval();
     }
-    if usize::max_value() - cmsg_len < ALIGN {
+    if usize::MAX - cmsg_len < ALIGN {
         return einval();
     }
     let cmsg_space = align(cmsg_len);

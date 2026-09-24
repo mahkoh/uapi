@@ -1,3 +1,5 @@
+#![allow(clippy::bool_assert_comparison)]
+
 #[test]
 #[cfg(target_os = "linux")]
 fn exec2() {

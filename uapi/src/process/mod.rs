@@ -172,7 +172,7 @@ pub fn getegid() -> c::gid_t {
 
 #[man(getgroups(2))]
 pub fn getgroups(grouplist: &mut [c::gid_t]) -> Result<&mut [c::gid_t]> {
-    let len = grouplist.len().try_into().unwrap_or(c::c_int::max_value());
+    let len = grouplist.len().try_into().unwrap_or(c::c_int::MAX);
     let res = unsafe { c::getgroups(len, grouplist.as_mut_ptr()) };
     map_err!(res)?;
     Ok(&mut grouplist[..res as usize])

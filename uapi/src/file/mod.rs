@@ -60,7 +60,7 @@ pub fn readv<T: MaybeUninitIovecMut + ?Sized>(
 ) -> Result<InitializedIovec<'_>> {
     unsafe {
         let bufs = bufs.as_iovec_mut();
-        let len = i32::try_from(bufs.len()).unwrap_or(i32::max_value());
+        let len = i32::try_from(bufs.len()).unwrap_or(i32::MAX);
         let val = c::readv(fd, bufs.as_mut_ptr() as *mut _, len);
         let val = map_err!(val)? as usize;
         Ok(InitializedIovec::new(bufs, val))
@@ -89,7 +89,7 @@ pub fn preadv<T: MaybeUninitIovecMut + ?Sized>(
 ) -> Result<InitializedIovec<'_>> {
     unsafe {
         let bufs = bufs.as_iovec_mut();
-        let len = i32::try_from(bufs.len()).unwrap_or(i32::max_value());
+        let len = i32::try_from(bufs.len()).unwrap_or(i32::MAX);
         let val = c::preadv(fd, bufs.as_mut_ptr() as *mut _, len, offset);
         let val = map_err!(val)? as usize;
         Ok(InitializedIovec::new(bufs, val))
@@ -132,7 +132,7 @@ pub fn pwrite<T: ?Sized>(fd: c::c_int, buf: &T, offset: c::off_t) -> Result<usiz
 #[man(writev(2))]
 pub fn writev<T: MaybeUninitIovec + ?Sized>(fd: c::c_int, bufs: &T) -> Result<usize> {
     let bufs = bufs.as_iovec();
-    let len = i32::try_from(bufs.len()).unwrap_or(i32::max_value());
+    let len = i32::try_from(bufs.len()).unwrap_or(i32::MAX);
     let val = unsafe { c::writev(fd, black_box_id(bufs.as_ptr()) as *const _, len) };
     map_err!(val).map(|v| v as usize)
 }
@@ -145,7 +145,7 @@ pub fn pwritev<T: MaybeUninitIovec + ?Sized>(
     offset: c::off_t,
 ) -> Result<usize> {
     let bufs = bufs.as_iovec();
-    let len = i32::try_from(bufs.len()).unwrap_or(i32::max_value());
+    let len = i32::try_from(bufs.len()).unwrap_or(i32::MAX);
     let val =
         unsafe { c::pwritev(fd, black_box_id(bufs.as_ptr()) as *const _, len, offset) };
     map_err!(val).map(|v| v as usize)

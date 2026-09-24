@@ -1,3 +1,5 @@
+#![allow(clippy::len_zero)]
+
 use crate::{socket::linux::netlink::sealed::Sealed, *};
 use proc::beta;
 use std::{
@@ -133,7 +135,7 @@ fn nlmsg_read_header<'a, H: Pod + NlmsgHeader>(
     if buf.len() < len {
         return einval();
     }
-    if usize::max_value() - len < ALIGN {
+    if usize::MAX - len < ALIGN {
         return einval();
     }
     let space = nlmsg_align(len).min(buf.len());

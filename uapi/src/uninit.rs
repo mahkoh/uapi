@@ -108,7 +108,10 @@ impl<'a> InitializedIovec<'a> {
     ) -> Self {
         Self {
             inner: InitializedIovecIter {
-                buf: mem::transmute(buf),
+                buf: mem::transmute::<
+                    &'a [&'a mut [MaybeUninit<u8>]],
+                    &'a [&'a [MaybeUninit<u8>]],
+                >(buf),
                 initialized,
             },
         }
@@ -226,6 +229,7 @@ mod test {
         let slice = &buf[..];
         let iovec = IoSlice::new(slice);
 
+        #[allow(clippy::size_of_ref)]
         unsafe {
             assert_eq!(mem::size_of_val(&iovec), mem::size_of_val(&slice));
             assert_eq!(
