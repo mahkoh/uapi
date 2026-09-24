@@ -246,7 +246,7 @@ pub fn preadv2<T: MaybeUninitIovecMut + ?Sized>(
     flags: c::c_int,
 ) -> Result<InitializedIovec<'_>> {
     let bufs = unsafe { bufs.as_iovec_mut() };
-    let len = i32::try_from(bufs.len()).unwrap_or(i32::max_value());
+    let len = i32::try_from(bufs.len()).unwrap_or(i32::MAX);
     let val = unsafe {
         c::syscall(
             c::SYS_preadv2,
@@ -270,7 +270,7 @@ pub fn pwritev2<T: MaybeUninitIovec + ?Sized>(
     flags: c::c_int,
 ) -> Result<usize> {
     let bufs = bufs.as_iovec();
-    let len = i32::try_from(bufs.len()).unwrap_or(i32::max_value());
+    let len = i32::try_from(bufs.len()).unwrap_or(i32::MAX);
     let val = unsafe {
         c::syscall(
             c::SYS_pwritev2,

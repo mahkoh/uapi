@@ -2,7 +2,9 @@
 #![allow(
     clippy::or_fun_call,
     clippy::manual_non_exhaustive,
-    clippy::needless_lifetimes
+    clippy::needless_lifetimes,
+    clippy::manual_is_multiple_of,
+    clippy::unnecessary_cast
 )]
 // https://github.com/rust-lang/rust-clippy/issues/6466
 #![allow(clippy::useless_conversion)]

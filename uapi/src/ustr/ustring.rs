@@ -81,7 +81,7 @@ impl Ustring {
     where
         F: FnOnce(&mut [MaybeUninit<u8>]) -> Result<usize>,
     {
-        let mut s = mem::replace(self, Ustring::new());
+        let mut s = mem::take(self);
         s.init();
 
         let res = {

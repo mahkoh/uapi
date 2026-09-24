@@ -1,3 +1,5 @@
+#![allow(clippy::byte_char_slices, clippy::useless_format)]
+
 use std::{
     borrow::Borrow,
     convert::{TryFrom, TryInto},
@@ -83,10 +85,7 @@ fn ustr() {
     assert_eq!(Ustr::from_str("abc\0").unwrap(), "abc");
     assert_eq!(Ustr::from_str("abc"), None);
     unsafe {
-        assert_eq!(
-            Ustr::from_bytes_unchecked(&mut [b'a', b'b', b'c', 0]),
-            "abc"
-        );
+        assert_eq!(Ustr::from_bytes_unchecked(&[b'a', b'b', b'c', 0]), "abc");
     }
     assert_eq!(Ustr::from_bytes(b"abc\0").unwrap(), "abc");
     assert_eq!(Ustr::from_bytes(b"abc"), None);

@@ -31,7 +31,7 @@ pub fn epoll_wait(
     events: &mut [c::epoll_event],
     timeout: c::c_int,
 ) -> Result<usize> {
-    let len = events.len().try_into().unwrap_or(c::c_int::max_value());
+    let len = events.len().try_into().unwrap_or(c::c_int::MAX);
     let res = unsafe { c::epoll_wait(epfd, events.as_mut_ptr(), len, timeout) };
     map_err!(res).map(|v| v as usize)
 }

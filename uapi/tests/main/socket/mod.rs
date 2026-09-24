@@ -1,3 +1,5 @@
+#![allow(clippy::len_zero)]
+
 use std::{
     collections::HashSet,
     io::{IoSlice, IoSliceMut, Write},

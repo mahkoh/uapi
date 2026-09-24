@@ -1,4 +1,4 @@
-#![allow(deprecated)]
+#![allow(deprecated, clippy::zombie_processes)]
 
 use std::{
     borrow::Cow,
