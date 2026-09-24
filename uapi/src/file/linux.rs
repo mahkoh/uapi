@@ -107,7 +107,7 @@ pub fn inotify_rm_watch(fd: c::c_int, wd: c::c_int) -> Result<()> {
 pub fn inotify_read<T: Pod + ?Sized>(
     fd: c::c_int,
     buf: &mut T,
-) -> Result<impl IntoIterator<Item = InotifyEvent>> {
+) -> Result<impl IntoIterator<Item = InotifyEvent<'_>>> {
     let res = read(fd, buf)?;
     Ok(InotifyIter(res))
 }
@@ -244,7 +244,7 @@ pub fn preadv2<T: MaybeUninitIovecMut + ?Sized>(
     bufs: &mut T,
     offset: c::loff_t,
     flags: c::c_int,
-) -> Result<InitializedIovec> {
+) -> Result<InitializedIovec<'_>> {
     let bufs = unsafe { bufs.as_iovec_mut() };
     let len = i32::try_from(bufs.len()).unwrap_or(i32::max_value());
     let val = unsafe {

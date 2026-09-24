@@ -57,7 +57,7 @@ pub fn read<T: Pod + ?Sized>(fd: c::c_int, buf: &mut T) -> Result<&mut [u8]> {
 pub fn readv<T: MaybeUninitIovecMut + ?Sized>(
     fd: c::c_int,
     bufs: &mut T,
-) -> Result<InitializedIovec> {
+) -> Result<InitializedIovec<'_>> {
     unsafe {
         let bufs = bufs.as_iovec_mut();
         let len = i32::try_from(bufs.len()).unwrap_or(i32::max_value());
@@ -86,7 +86,7 @@ pub fn preadv<T: MaybeUninitIovecMut + ?Sized>(
     fd: c::c_int,
     bufs: &mut T,
     offset: c::off_t,
-) -> Result<InitializedIovec> {
+) -> Result<InitializedIovec<'_>> {
     unsafe {
         let bufs = bufs.as_iovec_mut();
         let len = i32::try_from(bufs.len()).unwrap_or(i32::max_value());
