@@ -215,7 +215,7 @@ impl<'a, H: NlmsgHeader> NlmsgWriter<'a, H> {
     /// When the nested writer is dropped, the behavior is as if the nested message
     /// had been written to a separate buffer and then written to this writer using
     /// [`Self::write`].
-    pub fn nest<H2: NlmsgHeader>(&mut self, header: H2) -> Result<NlmsgWriter<H2>> {
+    pub fn nest<H2: NlmsgHeader>(&mut self, header: H2) -> Result<NlmsgWriter<'_, H2>> {
         let aligned_len = nlmsg_align(self.len);
         if aligned_len >= self.buf.len() {
             return einval();

@@ -430,7 +430,10 @@ fn bytes() {
     assert_eq!("a".as_bytes().bytes(), b"a");
     assert_eq!(OsStr::new("a").bytes(), b"a");
     assert_eq!(Path::new("a").bytes(), b"a");
-    assert_eq!(CStr::from_bytes_with_nul(b"a\0").unwrap().bytes(), b"a");
+    assert_eq!(
+        Bytes::bytes(CStr::from_bytes_with_nul(b"a\0").unwrap()),
+        b"a",
+    );
 }
 
 #[test]

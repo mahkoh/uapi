@@ -3,38 +3,33 @@
 
 use crate::{c, c::*};
 
-cfg_if! {
-    // https://github.com/torvalds/linux/blob/d567f5db412ed52de0b3b3efca4a451263de6108/arch/alpha/kernel/syscalls/syscall.tbl#L464-L465
-    if #[cfg(not(target_arch = "alpha"))] {
-        pub const SYS_pidfd_send_signal: c_long = 424;
-        pub const SYS_io_uring_setup: c_long = 425;
-        pub const SYS_io_uring_enter: c_long = 426;
-        pub const SYS_io_uring_register: c_long = 427;
-        pub const SYS_open_tree: c_long = 428;
-        pub const SYS_move_mount: c_long = 429;
-        pub const SYS_fsopen: c_long = 430;
-        pub const SYS_fsconfig: c_long = 431;
-        pub const SYS_fsmount: c_long = 432;
-        pub const SYS_fspick: c_long = 433;
-        pub const SYS_pidfd_open: c_long = 434;
-        pub const SYS_clone3: c_long = 435;
-        pub const SYS_close_range: c_long = 436;
-        pub const SYS_openat2: c_long = 437;
-        pub const SYS_pidfd_getfd: c_long = 438;
-        pub const SYS_faccessat2: c_long = 439;
-        pub const SYS_process_madvise: c_long = 440;
-        pub const SYS_epoll_pwait2: c_long = 441;
-        pub const SYS_mount_setattr: c_long = 442;
-        pub const SYS_quotactl_fd: c_long = 443;
-        pub const SYS_landlock_create_ruleset: c_long = 444;
-        pub const SYS_landlock_add_rule: c_long = 445;
-        pub const SYS_landlock_restrict_self: c_long = 446;
-        pub const SYS_memfd_secret: c_long = 447;
-        pub const SYS_process_mrelease: c_long = 448;
-        pub const SYS_futex_waitv: c_long = 449;
-        pub const SYS_set_mempolicy_home_node: c_long = 450;
-    }
-}
+pub const SYS_pidfd_send_signal: c_long = 424;
+pub const SYS_io_uring_setup: c_long = 425;
+pub const SYS_io_uring_enter: c_long = 426;
+pub const SYS_io_uring_register: c_long = 427;
+pub const SYS_open_tree: c_long = 428;
+pub const SYS_move_mount: c_long = 429;
+pub const SYS_fsopen: c_long = 430;
+pub const SYS_fsconfig: c_long = 431;
+pub const SYS_fsmount: c_long = 432;
+pub const SYS_fspick: c_long = 433;
+pub const SYS_pidfd_open: c_long = 434;
+pub const SYS_clone3: c_long = 435;
+pub const SYS_close_range: c_long = 436;
+pub const SYS_openat2: c_long = 437;
+pub const SYS_pidfd_getfd: c_long = 438;
+pub const SYS_faccessat2: c_long = 439;
+pub const SYS_process_madvise: c_long = 440;
+pub const SYS_epoll_pwait2: c_long = 441;
+pub const SYS_mount_setattr: c_long = 442;
+pub const SYS_quotactl_fd: c_long = 443;
+pub const SYS_landlock_create_ruleset: c_long = 444;
+pub const SYS_landlock_add_rule: c_long = 445;
+pub const SYS_landlock_restrict_self: c_long = 446;
+pub const SYS_memfd_secret: c_long = 447;
+pub const SYS_process_mrelease: c_long = 448;
+pub const SYS_futex_waitv: c_long = 449;
+pub const SYS_set_mempolicy_home_node: c_long = 450;
 
 // https://github.com/rust-lang/libc/pull/????
 pub const OPEN_TREE_CLONE: c_uint = 1;
